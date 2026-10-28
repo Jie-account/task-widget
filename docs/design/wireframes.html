@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>T-003 · 桌面组件与 App 交互线框</title>
+  <style>
+    :root{font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:#242424;background:#eeece7;font-synthesis:none;--line:#d7d4cd;--muted:#73716c;--orange:#ffb366;--red:#ff8585}
+    *{box-sizing:border-box}body{margin:0}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.32}button:focus-visible,a:focus-visible{outline:3px solid #2476b7;outline-offset:2px}button{color:inherit}h1,h2,h3,p{margin:0}a{color:inherit}header{padding:30px 44px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:24px;align-items:end}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--muted);margin-bottom:10px}h1{font-size:26px;font-weight:600}header p{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.8}.tag{font-size:12px;border:1px solid #aaa69e;padding:7px 10px;white-space:nowrap}
+    .workspace{display:grid;grid-template-columns:218px minmax(0,1fr);max-width:1540px;margin:auto}.rail{padding:26px 18px 24px 30px;border-right:1px solid var(--line)}.rail h2{font-size:12px;color:var(--muted);margin-bottom:12px}.rail button{display:block;width:100%;text-align:left;background:transparent;border:0;padding:10px 12px;font-size:13px;border-radius:4px}.rail button:hover{background:#e0ddd6}.rail button.active{background:#292929;color:#fff}.rail small{display:block;margin:24px 10px 0;font-size:11px;color:var(--muted);line-height:1.9}.rail .reset{border:1px solid #bcb8af;margin-top:22px;font-size:12px}.board{padding:26px 30px 32px}.board-top{display:flex;align-items:start;justify-content:space-between;gap:20px;margin-bottom:22px}.board-top h2{font-size:17px}.board-top p{font-size:12px;color:var(--muted);line-height:1.8;margin-top:6px}.phone-grid{display:grid;grid-template-columns:repeat(2,minmax(0,390px));justify-content:center;gap:36px}.caption{display:flex;justify-content:space-between;margin-bottom:10px;font-size:12px;color:#5c5a55}.caption b{font-weight:600;color:#262626}.device{height:722px;border:1px solid #8c8981;border-radius:28px;padding:10px;background:#d9d6ce;box-shadow:0 12px 26px #2424240c}.screen{height:100%;border:1px solid #5b5a57;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;background:#faf9f6;position:relative;font-size:14px}.system-bar{height:30px;flex-shrink:0;display:flex;justify-content:space-between;padding:8px 18px 4px;font-size:10px}.system-nav{height:27px;flex-shrink:0;display:grid;place-items:center}.system-nav:after{content:"";width:94px;height:4px;border-radius:4px;background:#aaa}.desktop{background:#bfbdb6}.desktop-label{height:32px;text-align:center;font-size:10px;color:#53534f;letter-spacing:1px;padding-top:7px}.widget{margin:0 8px;flex:1;min-height:0;display:flex;flex-direction:column;background:#000;color:#fff;border-radius:14px;padding:6px 4px;overflow:hidden}.dock{height:48px;display:flex;justify-content:center;align-items:center;gap:24px}.dock i{width:23px;height:23px;border:1px solid #74736d;border-radius:7px}.tabs{display:flex;align-items:center;flex-shrink:0;height:48px;gap:0}.table-tab{min-width:0;flex:1;height:44px;border:0;border-bottom:1px solid #444;background:transparent;color:inherit;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.table-tab.selected{border-bottom:2px solid #fff;font-weight:600}.icon{flex-shrink:0;width:40px;height:48px;display:grid;place-items:center;background:transparent;border:0;color:inherit;font-size:21px;padding:0}.page-arrow{width:32px;font-size:23px}.subtabs{display:flex;align-items:center;height:52px;flex-shrink:0;border-bottom:1px solid #333}.subtab{background:transparent;border:0;color:#aaa;font-size:13px;padding:0 9px;height:48px;white-space:nowrap}.subtab.selected{color:#fff;font-weight:600}.subtab.selected:after{content:"";display:block;width:12px;height:2px;background:currentColor;margin:5px auto -7px}.toolbar-space{flex:1}.task-list{flex:1;overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#555 #111}.task-row{display:flex;align-items:center;height:52px;flex-shrink:0;border-bottom:1px solid #232323;min-width:0}.check{font-size:22px;font-family:sans-serif}.task-title{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:left;border:0;background:transparent;color:inherit;padding:0 4px;font-size:14px;height:48px}.task-title.overdue{color:var(--red)}.task-date{width:100px;flex-shrink:0;border:0;background:transparent;color:var(--orange);font-size:12px;height:48px;padding:0 3px;white-space:nowrap;font-variant-numeric:tabular-nums}.delete{color:#aaa;font-size:23px;width:36px}.empty{padding:70px 18px;text-align:center;color:#aaa;font-size:13px;line-height:2}.empty strong{display:block;color:inherit;font-size:15px;font-weight:500;margin-bottom:6px}
+    .app-area{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}.app-header{display:flex;align-items:center;min-height:54px;flex-shrink:0;padding:0 10px;border-bottom:1px solid #d9d6cf;gap:6px}.app-header h3{font-size:16px;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:600}.app-header button{border:0;background:transparent;min-height:48px;padding:0 8px;font-size:13px}.app-header .back{width:36px;padding:0;font-size:23px}.app-home{display:flex;flex-direction:column;flex:1;min-height:0;background:#111;color:white;padding:0 5px}.app-content{padding:20px 18px;overflow:auto;flex:1;min-height:0}.scope{font-size:12px;color:#777;line-height:1.8;margin-bottom:18px}.field{display:block;margin-bottom:20px}.field span.label{display:block;font-size:12px;color:#62605a;margin-bottom:8px}.field input,.field textarea{width:100%;border:1px solid #bcb8ae;border-radius:5px;background:#fff;padding:12px;outline-offset:2px}.field textarea{height:120px;resize:vertical}.field .req{color:#777;font-size:11px}.date-button{width:100%;padding:14px 10px;border:1px solid #bcb8ae;border-radius:5px;background:#fff;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:6px;font-variant-numeric:tabular-nums}.hint{font-size:12px;line-height:1.8;color:#76736c;margin-top:10px}.error{font-size:12px;color:#b13b32;margin-top:8px;line-height:1.6}.primary,.secondary,.danger{min-height:46px;border:1px solid #343434;border-radius:5px;padding:10px 15px;background:#2e2e2e;color:white}.secondary{background:transparent;color:#383838;border-color:#bcb8ae}.danger{background:#aa3930;border-color:#aa3930}.full{width:100%}.app-foot{padding:12px 18px;border-top:1px solid #d7d4cd;background:#faf9f6;flex-shrink:0}.app-foot small{display:block;color:#777;font-size:10px;margin-top:8px;text-align:center}.app-body-backdrop{flex:1;background:#e3e0d9;display:flex;flex-direction:column;justify-content:center;padding:18px;gap:14px}.context-card{border:1px dashed #b8b4aa;padding:18px;color:#777;font-size:12px;line-height:1.8}.sheet{background:#faf9f6;border:1px solid #c8c3b8;border-radius:10px;padding:22px 18px;box-shadow:0 8px 20px #0001}.sheet h3{font-size:18px;margin-bottom:14px}.sheet p{font-size:14px;line-height:1.8;overflow-wrap:anywhere;white-space:pre-line}.sheet .actions{display:flex;gap:10px;margin-top:22px}.sheet .actions button{flex:1}.sheet .scope{margin-bottom:10px}.menu-item{border:1px solid #bcb8ae;border-radius:4px;background:#fff;min-height:48px;width:100%;text-align:left;padding:10px;margin-top:15px}.preview{padding:16px 12px;border:1px solid #bcb8ae;margin-bottom:24px;background:white;line-height:1.8;font-size:14px;font-variant-numeric:tabular-nums}.date-fields{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px}.stepper label{display:block;font-size:12px;color:#666;margin-bottom:8px}.stepper input{width:100%;text-align:center;padding:10px 2px;border:1px solid #bbb7ae;background:#fff;border-radius:3px;font-variant-numeric:tabular-nums}.step-controls{display:flex;gap:3px;margin-top:4px}.step-controls button{width:50%;height:44px;background:transparent;border:1px solid #cbc7bd;border-radius:3px;font-size:18px}.time-toggle{display:flex;align-items:center;gap:9px;margin:25px 0 14px;font-size:14px;min-height:44px}.time-toggle input{width:20px;height:20px;accent-color:#333}.time-fields{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}.time-fields input{width:100%;padding:10px;text-align:center;border:1px solid #bbb7ae;border-radius:3px}.time-fields label{display:flex;flex-direction:column;font-size:12px;gap:6px;color:#666}.sort-row,.table-row{display:flex;align-items:center;gap:7px;min-height:60px;border-bottom:1px solid #d7d4cd}.sort-title,.table-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.move-controls{display:flex}.move-controls button,.table-row button{width:38px;height:48px;background:transparent;border:0;font-size:17px;padding:0}.table-row .rename{font-size:12px;width:40px}.count{color:#888;font-size:11px;display:block;margin-top:4px}.idle{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:35px}.idle h3{font-size:18px;margin-bottom:14px}.idle p{color:#777;font-size:13px;line-height:1.9;margin-bottom:24px}.note-panel{margin-top:24px;border-top:1px solid var(--line);padding-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:30px}.note-panel h3{font-size:12px;margin-bottom:8px}.note-panel p{font-size:12px;color:#6e6a62;line-height:1.9}.note-panel code{font-size:11px}.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 20px;background:#333;color:#fff;border-radius:6px;font-size:13px;z-index:10;max-width:90%;box-shadow:0 3px 12px #0003}.toast:empty{display:none}.review-label{font-size:10px;color:#8c8981;margin-top:8px;text-align:center}
+    @media(min-width:1350px){.board{padding-left:45px;padding-right:45px}.phone-grid{gap:60px}}@media(max-width:1080px){header{padding:24px}.workspace{grid-template-columns:170px minmax(0,1fr)}.rail{padding:24px 10px}.board{padding:24px 16px}.phone-grid{gap:16px}.device{padding:6px;border-radius:23px}.subtab{padding:0 6px;font-size:12px}.task-title{font-size:13px}.task-date{font-size:11px;width:93px}.check{width:34px}.delete{width:30px}}@media(max-width:850px){header{display:block}header .tag{display:inline-block;margin-top:16px}.workspace{display:block}.rail{border-right:0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:5px;padding:14px}.rail h2,.rail small{display:none}.rail button{width:auto;padding:8px;font-size:12px}.rail .reset{margin:0}.phone-grid{grid-template-columns:minmax(0,390px)}.board-top{display:block}.note-panel{grid-template-columns:1fr;gap:15px}.device{padding:10px}.subtab{padding:0 9px;font-size:13px}.task-date{width:100px;font-size:12px}.check{width:40px}.delete{width:36px}}@media print{header{padding:10px}.rail,.toast{display:none}.workspace{display:block}.board{padding:12px}.device{height:690px}.phone-grid{grid-template-columns:repeat(2,350px);gap:24px}.note-panel{break-inside:avoid}}
+    .app-body-backdrop{min-height:0;overflow:hidden}.context-card{flex-shrink:0;max-height:110px;overflow:auto;overflow-wrap:anywhere}.sheet{display:flex;flex-direction:column;min-height:0;max-height:100%}.sheet h3,.sheet .actions,.sheet .scope,.sheet .menu-item{flex-shrink:0}.sheet p:not(.scope){overflow:auto;min-height:0}
+    @media(max-width:420px){.board{padding-left:10px;padding-right:10px}.device{padding:7px}.subtab{padding:0 6px;font-size:12px}.task-date{width:94px;font-size:11px}.check{width:36px}.delete{width:32px}.page-arrow{width:28px}}
+    .field .title-input{height:76px;min-height:76px}.field #description-input{height:104px}.date-content{padding-top:14px;padding-bottom:14px}.date-content .preview{padding:10px 12px;margin-bottom:16px}.date-content .time-toggle{margin:16px 0 8px}.date-content .hint{font-size:11px;line-height:1.6}.date-content [data-action="no-date"]{margin-top:12px!important}
+  </style>
+</head>
+<body>
+<header><div><div class="eyebrow">TASK WIDGET / T-003 / WIREFRAME 01</div><h1>一页桌面，三个任务视图</h1><p>依据需求 v0.7 · 组件保留黑底与状态色 · App 承载输入和确认</p></div><span class="tag">设计默认稿 · 2026.10.28</span></header>
+<div class="workspace">
+  <nav class="rail" aria-label="审阅场景">
+    <h2>选择审阅场景</h2>
+    <button data-scene="dated" class="active">01　有日期</button><button data-scene="undated">02　无日期与菜单</button><button data-scene="done">03　已完成</button><button data-scene="add">04　添加任务</button><button data-scene="detail">05　详情与编辑</button><button data-scene="date">06　设置日期</button><button data-scene="sort">07　修改排序</button><button data-scene="tables">08　管理表</button><button data-scene="confirm">09　操作确认</button><button data-scene="empty">10　空态与长表名</button>
+    <button class="reset" id="reset">重置演示数据</button>
+    <small>左侧为桌面组件，右侧为 App 页面。两侧任务可点击。<br><br>演示日期固定为<br>2026-10-28 10:00。<br>数据仅在本次网页内存中保留，刷新即重置。<br><br><a href="../wireframes.md">阅读交互与需求映射 ↗</a></small>
+  </nav>
+  <main class="board">
+    <div class="board-top"><div><h2 id="scene-title">01 / 有日期 · 先看到最近要做的事</h2><p id="scene-desc">顶部固定，只有任务列表滚动；点击方框、标题、日期、× 分别进入对应流程。</p></div></div>
+    <div class="phone-grid">
+      <section><div class="caption"><b>A / 桌面组件</b><span>一页可用区域示意</span></div><div class="device"><div class="screen desktop"><div class="system-bar"><span>10:00</span><span>信号 · 电池</span></div><div class="desktop-label">桌面 · 组件所在页</div><div id="widget" class="widget"></div><div class="dock" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="system-nav"></div></div></div><p class="review-label">约 360 × 570 逻辑区域，仅示意；实际边距由桌面决定</p></section>
+      <section><div class="caption"><b>B / App 页面</b><span id="origin-label">App 内入口</span></div><div class="device"><div class="screen"><div class="system-bar"><span>10:00</span><span>信号 · 电池</span></div><div id="app" class="app-area"></div><div class="system-nav"></div></div></div><p class="review-label">轻量流程以 App 页面承载；底部按钮避让系统与键盘</p></section>
+    </div>
+    <div class="note-panel"><div><h3>当前设计要点</h3><p id="design-note"></p></div><div><h3>审阅方式</h3><p>场景按钮可直达各布局。可试：完成 / 恢复、取消日期、添加保存、未保存返回、上下排序、表新增与删除。不同场景共用演示数据。<a href="../wireframes.md">详细规则与 T-004 验证入口 ↗</a></p></div></div>
+  </main>
+</div><div id="toast" class="toast" role="status"></div>
+<script>
+  // 线框使用固定时间，便于审阅过期、同日排序及日期精度。
+  const TODAY='2026-10-28', NOW='2026-10-28T10:00';
+  const views={dated:'有日期',undated:'无日期',done:'已完成'};
+  const sceneCopy={
+    dated:['01 / 有日期 · 先看到最近要做的事','顶部固定，只有任务列表滚动；点击方框、标题、日期、× 分别进入对应流程。','标题白色；过期红色；日期橙色。组件只显示年月日，时分与描述留在详情中。'],
+    undated:['02 / 无日期 · 保留人工顺序','右侧演示当前表的子表菜单，排序入口直接定位该表。','无日期菜单仅提供“修改排序”。新建、取消日期和无日期恢复均置顶，其他任务相对顺序保持。'],
+    done:['03 / 已完成 · 保留原日期','点击已勾选方框确认恢复；标题进入详情，× 进入删除确认。','已完成标题保持白色；行内不显示日期；保留菜单和删除，隐藏添加 +。'],
+    add:['04 / 添加 · 保存后回到原入口','当前从桌面组件的有日期视图进入；日期默认今天，时分默认留空。','标题必填、描述选填。保存是提交点；从桌面进入保存后回到桌面，从 App 进入返回原页面。'],
+    detail:['05 / 详情即编辑','直接修改标题、描述和日期；有修改时返回，先选择放弃或继续。','固定表归属；日期按实际精度显示。完成状态单独显示，已完成的原日期可以继续查看与编辑。'],
+    date:['06 / 日期 · 精度显式选择','年月日可加减或填写；勾选“设置时分”才要求完整 24 小时时间。','先确认日期回到任务编辑，再保存整条任务。允许过去日期；不设时分与 00:00 明确区分。'],
+    sort:['07 / 修改排序 · 一次保存','组件菜单携带当前表，App 内使用上移 / 下移按钮调整并保存。','仅无日期任务可人工排序，边界按钮禁用；保存返回原入口。这里采用逐项移动，拖拽留待后续需要。'],
+    tables:['08 / 管理表 · 从 App 首页进入','新增、重命名、调整顺序、删除集中在这一页；组件菜单保持子表作用域。','删除确认显示完整表名与任务总数；仅剩一张表时禁用删除。排序立即提交，新建与重命名由保存提交。'],
+    confirm:['09 / 确认 · 先说明结果再执行','当前为完成确认。其他操作可直接从左侧组件触发。','完成、恢复、取消日期、删除任务、删除表均需确认；取消保持原状态，确认后刷新组件且保留原视图。'],
+    empty:['10 / 空态与长表名','切换到没有任务的长表名；用左右按钮翻页，当前页最多显示三个表标签。','长表名标签单行省略，App 管理或页面作用域显示完整名称。空列表保持工具区；空菜单可点击并说明暂无操作。']
+  };
+  let tables,tasks,widgetState,appState,screen,origin,scene,draft,editorBase,dateDraft,dateBase,sortDraft,sortBase,pending,form,seq,toastTimer;
+  const $=s=>document.querySelector(s), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function reset(){
+    tables=[{id:'default',name:'默认'},{id:'work',name:'工作'},{id:'life',name:'生活'},{id:'reading',name:'阅读计划与长期资料整理'},{id:'ideas',name:'灵感'},{id:'learn',name:'学习'},{id:'home',name:'家务'}];
+    tasks=[
+      {id:1,table:'work',title:'提交月度复盘与下一阶段行动计划',description:'先整理项目进度，再检查本月遗留问题。',date:'2026-10-27',time:null,done:false,created:1,rank:0},
+      {id:2,table:'work',title:'确认设计评审',description:'核对三个视图、日期与排序交互。',date:TODAY,time:'09:30',done:false,created:2,rank:0},
+      {id:3,table:'work',title:'发送会议纪要',description:'',date:TODAY,time:'14:00',done:false,created:3,rank:0},
+      {id:4,table:'work',title:'整理本周资料',description:'只有日期，次日零点起过期。',date:TODAY,time:null,done:false,created:4,rank:0},
+      {id:5,table:'work',title:'准备原型讨论',description:'',date:'2026-10-29',time:null,done:false,created:5,rank:0},
+      {id:6,table:'work',title:'收集参考资料',description:'',date:null,time:null,done:false,created:6,rank:-4},
+      {id:7,table:'work',title:'梳理任务拆分',description:'可通过 App 内修改排序调整位置。',date:null,time:null,done:false,created:7,rank:-3},
+      {id:8,table:'work',title:'整理项目文件夹',description:'',date:null,time:null,done:false,created:8,rank:-2},
+      {id:9,table:'work',title:'列出待验证问题',description:'',date:null,time:null,done:false,created:9,rank:-1},
+      {id:10,table:'work',title:'确认首版需求',description:'已完成任务保留原日期。',date:'2026-10-26',time:'18:00',done:true,completed:20,created:10,rank:0},
+      {id:11,table:'work',title:'建立项目文档',description:'',date:null,time:null,done:true,completed:19,created:11,rank:0}
+    ];
+    for(let i=0;i<9;i++)tasks.push({id:20+i,table:'work',title:['跟进联调结果','整理使用反馈','补充边界说明','核对交付资料','验证返回行为','回顾本轮进度','准备下一轮任务','整理工作记录','归档参考资料'][i],description:'列表滚动示例任务。',date:`2026-11-${String(i+1).padStart(2,'0')}`,time:null,done:false,created:20+i,rank:0});
+    seq=100;widgetState={table:'work',view:'dated',page:0};appState={...widgetState};screen='home';origin='app';scene='dated';draft=null;pending=null;renderAll();
+  }
+  const tableName=id=>tables.find(t=>t.id===id)?.name||'';
+  const getTask=id=>tasks.find(t=>t.id===Number(id));
+  const isOverdue=t=>!t.done&&t.date&&(t.time?`${t.date}T${t.time}`<NOW:t.date<TODAY);
+  function list(table,view){
+    return tasks.filter(t=>t.table===table&&(view==='done'?t.done:!t.done&&(view==='dated'?!!t.date:!t.date))).sort((a,b)=>view==='done'?b.completed-a.completed:view==='undated'?a.rank-b.rank:a.date.localeCompare(b.date)||(a.time||'24:00').localeCompare(b.time||'24:00')||b.created-a.created||a.id-b.id);
+  }
+  const topRank=table=>Math.min(0,...list(table,'undated').map(t=>t.rank))-1;
+  function toast(message){$('#toast').textContent=message;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').textContent='',3300)}
+  function attr(action,extra=''){return `data-action="${action}" ${extra}`}
+  function listMarkup(state,place){
+    const pageTables=tables.slice(state.page*3,state.page*3+3), rowItems=list(state.table,state.view);
+    return `<div class="tabs" aria-label="表标签"><button class="icon page-arrow" ${attr('page',`data-place="${place}" data-delta="-1"`)} aria-label="上一页表标签" ${state.page===0?'disabled':''}>‹</button>${pageTables.map(t=>`<button class="table-tab ${t.id===state.table?'selected':''}" ${attr('table',`data-place="${place}" data-id="${t.id}"`)} title="${esc(t.name)}" aria-pressed="${t.id===state.table}">${esc(t.name)}</button>`).join('')}<button class="icon page-arrow" ${attr('page',`data-place="${place}" data-delta="1"`)} aria-label="下一页表标签" ${(state.page+1)*3>=tables.length?'disabled':''}>›</button></div>
+    <div class="subtabs" aria-label="任务视图">${Object.entries(views).map(([key,name])=>`<button class="subtab ${state.view===key?'selected':''}" ${attr('view',`data-place="${place}" data-view="${key}"`)} aria-pressed="${state.view===key}">${name}</button>`).join('')}<span class="toolbar-space"></span>${state.view!=='done'?`<button class="icon" ${attr('add',`data-place="${place}"`)} aria-label="添加任务">＋</button>`:''}<button class="icon" ${attr('menu',`data-place="${place}"`)} aria-label="${views[state.view]}子表菜单">⋯</button></div>
+    <div class="task-list" data-list="${place}">${rowItems.length?rowItems.map(t=>`<div class="task-row"><button class="icon check" ${attr('confirm',`data-place="${place}" data-op="${t.done?'restore':'complete'}" data-id="${t.id}"`)} aria-label="${t.done?'恢复':'完成'}：${esc(t.title)}">${t.done?'☑':'☐'}</button><button class="task-title ${isOverdue(t)?'overdue':''}" ${attr('edit',`data-place="${place}" data-id="${t.id}"`)} title="${esc(t.title)}">${esc(t.title)}</button>${state.view==='dated'?`<button class="task-date" ${attr('confirm',`data-place="${place}" data-op="undate" data-id="${t.id}"`)} aria-label="取消日期：${esc(t.title)}，${t.date}">${t.date}</button>`:''}<button class="icon delete" ${attr('confirm',`data-place="${place}" data-op="delete" data-id="${t.id}"`)} aria-label="删除：${esc(t.title)}">×</button></div>`).join(''):`<div class="empty"><strong>${state.view==='done'?'还没有已完成任务':state.view==='dated'?'还没有有日期任务':'还没有无日期任务'}</strong>${state.view==='done'?'完成的任务会显示在这里':'点击右上方 ＋ 添加任务'}</div>`}</div>`;
+  }
+  function appHeader(title,right=''){return `<div class="app-header"><button class="back" ${attr('back')} aria-label="返回">‹</button><h3>${esc(title)}</h3>${right}</div>`}
+  function renderAll(){
+    // 重绘时保存现有列表滚动位置，操作后仍可继续浏览原视图。
+    const scrolls=[...document.querySelectorAll('[data-list]')].map(el=>[el.dataset.list,el.scrollTop]);
+    $('#widget').innerHTML=listMarkup(widgetState,'widget');renderApp();
+    scrolls.forEach(([place,top])=>{const el=document.querySelector(`[data-list="${place}"]`);if(el)el.scrollTop=top});
+    document.querySelectorAll('[data-scene]').forEach(b=>b.classList.toggle('active',b.dataset.scene===scene));
+    $('#scene-title').textContent=sceneCopy[scene][0];$('#scene-desc').textContent=sceneCopy[scene][1];$('#design-note').textContent=sceneCopy[scene][2];
+    $('#origin-label').textContent=screen==='home'?'App 内入口':origin==='widget'?'桌面组件入口':'App 内入口';
+  }
+  function renderApp(){
+    let html='';
+    if(screen==='home')html=`<div class="app-header"><h3>任务 · ${esc(tableName(appState.table))}</h3><button ${attr('tables')}>表管理</button></div><div class="app-home">${listMarkup(appState,'app')}</div>`;
+    if(screen==='idle')html=`<div class="idle"><div><h3>已返回桌面</h3><p>组件已显示保存后的结果。<br>可以继续从左侧组件操作。</p><button class="secondary" ${attr('home')}>打开 App 首页</button></div></div>`;
+    if(screen==='editor')html=appHeader(draft.id?'任务详情':'添加任务',draft.id?`<button ${attr('editor-delete')}>删除</button>`:'')+`<div class="app-content"><p class="scope">所属表：${esc(tableName(draft.table))}　·　${draft.done?'已完成':'未完成'}</p><label class="field"><span class="label">标题 <span class="req">必填</span></span><textarea id="title-input" class="title-input" rows="2" placeholder="要做什么？">${esc(draft.title)}</textarea></label><label class="field"><span class="label">描述 <span class="req">选填</span></span><textarea id="description-input" placeholder="补充说明">${esc(draft.description)}</textarea></label><label class="field"><span class="label">日期</span><button class="date-button" ${attr('open-date')}><span>${draft.date?esc(draft.date+(draft.time?' '+draft.time:'')):'未设置日期'}</span><span>›</span></button></label><p class="hint">${draft.done?'保存后仍在已完成；恢复时按保留日期归类。':draft.date?'保存后进入有日期，按日期排序。':'保存后进入无日期，新任务位于最上方。'}</p><p class="error" id="editor-error" role="alert"></p></div><div class="app-foot"><button class="primary full" ${attr('save-task')}>保存</button><small>${origin==='widget'?'保存后返回桌面':'保存后返回 App 原页面'}</small></div>`;
+    if(screen==='date')html=appHeader('设置日期')+`<div class="app-content date-content"><div class="preview"><span class="scope">当前设置预览</span><br><strong id="date-preview"></strong></div><div class="date-fields">${[['year','年',4],['month','月',2],['day','日',2]].map(([k,label,len])=>`<div class="stepper"><label for="date-${k}">${label}</label><input id="date-${k}" inputmode="numeric" maxlength="${len}" value="${dateDraft[k]}" aria-label="${label}"><div class="step-controls"><button ${attr('step-date',`data-field="${k}" data-delta="-1"`)} aria-label="${label}减一">−</button><button ${attr('step-date',`data-field="${k}" data-delta="1"`)} aria-label="${label}加一">＋</button></div></div>`).join('')}</div><label class="time-toggle"><input id="time-enabled" type="checkbox" ${dateDraft.enabled?'checked':''}>设置时分（24 小时制）</label><div class="time-fields"><label>时<input id="date-hour" aria-label="时" inputmode="numeric" maxlength="2" placeholder="HH" value="${dateDraft.hour}" ${dateDraft.enabled?'':'disabled'}></label><span>:</span><label>分<input id="date-minute" aria-label="分" inputmode="numeric" maxlength="2" placeholder="mm" value="${dateDraft.minute}" ${dateDraft.enabled?'':'disabled'}></label></div><p class="hint">允许设置过去日期。年月日按所填年份解释；未设置时分时，次日 00:00 起过期。</p><p class="error" id="date-error" role="alert"></p><button class="secondary full" style="margin-top:20px" ${attr('no-date')}>不设置日期</button></div><div class="app-foot"><button class="primary full" ${attr('apply-date')}>确认日期</button><small>回到任务编辑后，点击保存提交</small></div>`;
+    if(screen==='menu'){
+      const state=origin==='widget'?widgetState:appState;
+      html=appHeader('子表菜单')+`<div class="app-body-backdrop"><div class="sheet"><p class="scope">${esc(tableName(state.table))} / ${views[state.view]}</p><h3>${views[state.view]} · 菜单</h3>${state.view==='undated'?`<button class="menu-item" ${attr('sort')}>修改排序　›</button>`:'<p>当前子表暂无可用操作</p>'}<div class="actions"><button class="secondary" ${attr('return')}>${state.view==='undated'?'关闭':'知道了'}</button></div></div></div>`;
+    }
+    if(screen==='sort')html=appHeader('修改排序')+`<div class="app-content"><p class="scope">${esc(tableName(form.table))} / 无日期<br>使用 ↑ ↓ 调整位置，保存后更新组件。</p>${sortDraft.length?sortDraft.map((id,i)=>`<div class="sort-row"><span class="sort-title" title="${esc(getTask(id).title)}">${i+1}. ${esc(getTask(id).title)}</span><span class="move-controls"><button ${attr('move-task',`data-index="${i}" data-delta="-1"`)} aria-label="上移：${esc(getTask(id).title)}" ${i===0?'disabled':''}>↑</button><button ${attr('move-task',`data-index="${i}" data-delta="1"`)} aria-label="下移：${esc(getTask(id).title)}" ${i===sortDraft.length-1?'disabled':''}>↓</button></span></div>`).join(''):'<div class="hint">暂无无日期任务，可返回后添加。</div>'}</div><div class="app-foot"><button class="primary full" ${attr('save-sort')} ${sortDraft.length<2?'disabled':''}>保存排序</button><small>${origin==='widget'?'保存后返回桌面':'保存后返回 App 原页面'}</small></div>`;
+    if(screen==='tables')html=appHeader('管理表',`<button ${attr('new-table')}>＋ 新建</button>`)+`<div class="app-content"><p class="scope">共 ${tables.length} 张表 · ↑ ↓ 立即保存表顺序<br>删除表将同时删除该表全部任务。</p>${tables.map((t,i)=>`<div class="table-row"><span class="table-name" title="${esc(t.name)}">${esc(t.name)}<span class="count">${tasks.filter(x=>x.table===t.id).length} 项任务</span></span><button ${attr('move-table',`data-index="${i}" data-delta="-1"`)} aria-label="上移表：${esc(t.name)}" ${i===0?'disabled':''}>↑</button><button ${attr('move-table',`data-index="${i}" data-delta="1"`)} aria-label="下移表：${esc(t.name)}" ${i===tables.length-1?'disabled':''}>↓</button><button class="rename" ${attr('rename-table',`data-id="${t.id}"`)}>改名</button><button ${attr('delete-table',`data-id="${t.id}"`)} aria-label="删除表：${esc(t.name)}" ${tables.length===1?'disabled title="至少保留一张表"':''}>×</button></div>`).join('')}<p class="hint">表名较长时在此单行省略，点击“改名”查看完整内容。至少保留一张表。</p></div>`;
+    if(screen==='table-form')html=appHeader(form.id?'重命名表':'新建表')+`<div class="app-content"><label class="field"><span class="label">表名 · 必填</span><textarea id="table-name-input" rows="3">${esc(form.name)}</textarea></label><p class="hint">${form.id?'修改后保留原表及其任务。':'新表添加到表标签的最后一页。'}</p><p class="error" id="table-error" role="alert"></p></div><div class="app-foot"><button class="primary full" ${attr('save-table')}>保存</button></div>`;
+    if(screen==='confirm')html=appHeader('确认操作')+`<div class="app-body-backdrop"><div class="context-card">${esc(pending.context||'当前编辑流程')}<br>请确认下方操作与结果。</div><div class="sheet"><h3>${esc(pending.title)}</h3><p>${esc(pending.body)}</p><div class="actions"><button class="secondary" ${attr('cancel-confirm')}>${esc(pending.cancel||'取消')}</button><button class="${pending.danger?'danger':'primary'}" ${attr('accept-confirm')}>${esc(pending.accept)}</button></div></div></div>`;
+    $('#app').innerHTML=html;if(screen==='date')updateDatePreview();
+  }
+  function source(place){origin=place||'app'}
+  function finish(message){screen=origin==='widget'?'idle':'home';pending=null;renderAll();if(message)toast(message)}
+  function openEditor(id,place){source(place);const state=place==='widget'?widgetState:appState;draft=id?{...getTask(id)}:{id:null,table:state.table,title:'',description:'',date:state.view==='dated'?TODAY:null,time:null,done:false};editorBase=JSON.stringify(draft);screen='editor';renderAll()}
+  function captureEditor(){if(screen==='editor'){draft.title=$('#title-input').value;draft.description=$('#description-input').value}}
+  function confirmTask(op,id,place,returnScreen){
+    source(place);const task=getTask(id),suffix=task.done?'保留在已完成中':'进入无日期最上方';
+    const definitions={complete:['完成这项任务？',`“${task.title}”\n确认后进入已完成最上方。`,'确认完成'],restore:['恢复为未完成？',`“${task.title}”\n${task.date?'保留原日期，回到有日期并按日期排序。':'回到无日期最上方。'}`,'确认恢复'],undate:['取消这项任务的日期？',`“${task.title}”\n${returnScreen==='editor'?'保存后':'确认后'}${suffix}。`,'取消日期'],delete:['删除这项任务？',`“${task.title}”\n删除后无法恢复。`,'删除任务']};
+    const d=definitions[op];pending={op,id:task.id,title:d[0],body:d[1],accept:d[2],danger:op==='delete',returnScreen:returnScreen||null,context:`${tableName(task.table)} / ${task.done?'已完成':task.date?'有日期':'无日期'}`};screen='confirm';renderAll();
+  }
+  function openSort(){const state=origin==='widget'?widgetState:appState;form={table:state.table};sortDraft=list(form.table,'undated').map(t=>t.id);sortBase=JSON.stringify(sortDraft);screen='sort';renderAll()}
+  function openDate(){captureEditor();const parts=(draft.date||TODAY).split('-');dateDraft={year:parts[0],month:parts[1],day:parts[2],enabled:!!draft.time,hour:draft.time?.split(':')[0]||'',minute:draft.time?.split(':')[1]||''};dateBase=JSON.stringify(dateDraft);screen='date';renderAll()}
+  function captureDate(){for(const k of ['year','month','day','hour','minute'])dateDraft[k]=$(`#date-${k}`).value;dateDraft.enabled=$('#time-enabled').checked}
+  function parsedDate(){
+    const {year,month,day,hour,minute,enabled}=dateDraft;
+    if(!/^\d{1,4}$/.test(year)||Number(year)<1||!/^\d{1,2}$/.test(month)||!/^\d{1,2}$/.test(day))return {error:'请输入有效的年月日。'};
+    const y=Number(year),m=Number(month),d=Number(day),date=`${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const maxDay=new Date(Date.UTC(y===0?400:y,m,0)).getUTCDate();
+    if(m<1||m>12||d<1||d>maxDay)return {error:'该月没有这个日期，请调整。'};
+    if(enabled&&(!/^\d{1,2}$/.test(hour)||!/^\d{1,2}$/.test(minute)||Number(hour)>23||Number(minute)>59))return {error:'请完整填写时分，范围为 00:00–23:59。'};
+    return {date,time:enabled?`${hour.padStart(2,'0')}:${minute.padStart(2,'0')}`:null};
+  }
+  function updateDatePreview(){captureDate();const result=parsedDate();$('#date-preview').textContent=result.error?'输入待完善':result.date+(result.time?' '+result.time:' · 无时分');$('#date-hour').disabled=!dateDraft.enabled;$('#date-minute').disabled=!dateDraft.enabled}
+  function discard(returnTo){pending={op:'discard',title:'放弃未保存修改？',body:'本次修改尚未保存。放弃后恢复原内容。',accept:'放弃修改',cancel:'继续编辑',returnScreen:screen,target:returnTo};screen='confirm';renderAll()}
+  function back(){
+    if(screen==='editor'){captureEditor();if(JSON.stringify(draft)!==editorBase)return discard('finish');return finish()}
+    if(screen==='sort'){if(JSON.stringify(sortDraft)!==sortBase)return discard('finish');return finish()}
+    if(screen==='table-form'){form.name=$('#table-name-input').value;if(form.name!==form.original)return discard('tables');screen='tables';return renderAll()}
+    if(screen==='date'){captureDate();if(JSON.stringify(dateDraft)!==dateBase)return discard('editor');screen='editor';return renderAll()}
+    if(screen==='confirm'){screen=pending.returnScreen||null;if(screen)return renderAll();return finish()}
+    if(screen==='tables'){screen='home';return renderAll()}
+    finish();
+  }
+  function acceptConfirm(){
+    const p=pending,t=getTask(p.id);
+    if(p.op==='discard'){if(['tables','editor'].includes(p.target)){screen=p.target;renderAll()}else finish('已放弃修改');return}
+    if(p.op==='delete-table'){
+      const index=tables.findIndex(x=>x.id===p.id);tasks=tasks.filter(t=>t.table!==p.id);tables.splice(index,1);
+      for(const s of [widgetState,appState]){if(s.table===p.id)s.table=tables[Math.min(index,tables.length-1)].id;s.page=Math.floor(tables.findIndex(x=>x.id===s.table)/3)}
+      screen='tables';pending=null;renderAll();toast('已删除表和所属任务');return;
+    }
+    if(p.op==='draft-undate'){draft.date=null;draft.time=null;screen='editor';pending=null;return renderAll()}
+    if(p.op==='complete'){t.done=true;t.completed=++seq}
+    if(p.op==='restore'){t.done=false;if(!t.date)t.rank=topRank(t.table);t.completed=null}
+    if(p.op==='delete')tasks=tasks.filter(x=>x.id!==t.id);
+    if(p.op==='undate'){if(p.returnScreen==='editor'){draft.date=null;draft.time=null;screen='editor';pending=null;return renderAll()}t.date=null;t.time=null;t.rank=topRank(t.table)}
+    finish({complete:'已完成',restore:'已恢复为未完成',delete:'已删除任务',undate:'已取消日期'}[p.op]);
+  }
+  function saveTask(){
+    captureEditor();if(!draft.title.trim()){$('#editor-error').textContent='请填写任务标题。';$('#title-input').focus();return}
+    const old=draft.id?getTask(draft.id):null;draft.title=draft.title.trim();
+    if(!old){draft.id=++seq;draft.created=seq;draft.rank=topRank(draft.table);tasks.push({...draft})}
+    else{if(!draft.date&&!draft.done&&old.date)draft.rank=topRank(draft.table);Object.assign(old,draft)}
+    finish('已保存任务');
+  }
+  function chooseScene(name){
+    // 场景切换是审阅工具；从正在编辑的流程离开仍先处理未保存修改。
+    if(screen==='editor'){captureEditor();if(JSON.stringify(draft)!==editorBase){toast('请先保存或返回处理未保存修改，再切换场景');return}}
+    if(screen==='sort'&&JSON.stringify(sortDraft)!==sortBase){toast('请先保存排序或返回处理修改，再切换场景');return}
+    if(screen==='date'){captureDate();if(JSON.stringify(dateDraft)!==dateBase||JSON.stringify(draft)!==editorBase){toast('请先确认日期或返回处理修改，再切换场景');return}}
+    if(screen==='table-form'&&$('#table-name-input').value!==form.original){toast('请先保存表名或返回处理修改，再切换场景');return}
+    scene=name;origin='widget';screen='home';widgetState.table='work';widgetState.page=0;widgetState.view=['undated','sort'].includes(name)?'undated':name==='done'?'done':'dated';appState={...widgetState};
+    if(name==='empty'){widgetState={table:'reading',page:1,view:'dated'};appState={...widgetState}}
+    if(name==='undated')screen='menu';
+    if(name==='add')return openEditor(null,'widget');
+    if(name==='detail'||name==='date'){const sample=list('work','dated')[0]||tasks.find(t=>t.table==='work');if(!sample){toast('请重置演示数据以查看详情场景');return renderAll()}openEditor(sample.id,'widget');if(name==='date')openDate();return}
+    if(name==='sort')return openSort();
+    if(name==='tables'){origin='app';screen='tables'}
+    if(name==='confirm'){const sample=list('work','dated')[0];if(sample)return confirmTask('complete',sample.id,'widget')}
+    renderAll();
+  }
+  document.addEventListener('input',e=>{if(screen==='date'&&e.target.id.startsWith('date-'))updateDatePreview()});
+  document.addEventListener('change',e=>{if(e.target.id==='time-enabled')updateDatePreview()});
+  document.addEventListener('click',e=>{
+    const sceneButton=e.target.closest('[data-scene]');if(sceneButton)return chooseScene(sceneButton.dataset.scene);
+    if(e.target.closest('#reset')){reset();toast('演示数据已重置');return}
+    const b=e.target.closest('[data-action]');if(!b||b.disabled)return;
+    const {action,place,id,op}=b.dataset,state=place==='widget'?widgetState:appState,delta=Number(b.dataset.delta),index=Number(b.dataset.index);
+    if(place==='widget'&&!['home','idle'].includes(screen)){toast('请先结束右侧当前流程，再操作桌面组件');return}
+    if(action==='view'){state.view=b.dataset.view;renderAll();$(`[data-list="${place}"]`).scrollTop=0}
+    if(action==='page'){state.page+=delta;renderAll()}
+    if(action==='table'){state.table=id;renderAll();$(`[data-list="${place}"]`).scrollTop=0}
+    if(action==='add')openEditor(null,place);
+    if(action==='edit')openEditor(id,place);
+    if(action==='confirm')confirmTask(op,id,place);
+    if(action==='menu'){source(place);screen='menu';renderAll()}
+    if(action==='return')finish();
+    if(action==='home'){origin='app';screen='home';renderAll()}
+    if(action==='back')back();
+    if(action==='save-task')saveTask();
+    if(action==='editor-delete'){captureEditor();confirmTask('delete',draft.id,origin,'editor')}
+    if(action==='open-date')openDate();
+    if(action==='step-date'){
+      captureDate();const k=b.dataset.field,ranges={year:[1,9999],month:[1,12],day:[1,31]};let n=Number(dateDraft[k])+delta;const [lo,hi]=ranges[k];n=Math.max(lo,Math.min(hi,n));$(`#date-${k}`).value=String(n).padStart(k==='year'?4:2,'0');updateDatePreview();
+    }
+    if(action==='apply-date'){captureDate();const result=parsedDate();if(result.error){$('#date-error').textContent=result.error;return}draft.date=result.date;draft.time=result.time;screen='editor';renderAll()}
+    if(action==='no-date'){
+      if(!draft.date){draft.date=null;draft.time=null;screen='editor';return renderAll()}
+      pending={op:'draft-undate',title:'取消这项任务的日期？',body:`“${draft.title||'新任务'}”\n${draft.done?'保存后保留在已完成中。':'保存后进入无日期最上方。'}`,accept:'取消日期',returnScreen:'date'};screen='confirm';renderAll();
+    }
+    if(action==='sort')openSort();
+    if(action==='move-task'){[sortDraft[index],sortDraft[index+delta]]=[sortDraft[index+delta],sortDraft[index]];renderAll()}
+    if(action==='save-sort'){sortDraft.forEach((taskId,i)=>getTask(taskId).rank=i);finish('已保存排序')}
+    if(action==='tables'){origin='app';screen='tables';renderAll()}
+    if(action==='move-table'){[tables[index],tables[index+delta]]=[tables[index+delta],tables[index]];for(const s of [widgetState,appState])s.page=Math.floor(tables.findIndex(t=>t.id===s.table)/3);renderAll();toast('表顺序已保存')}
+    if(action==='new-table'||action==='rename-table'){const t=tables.find(x=>x.id===id);form={id:t?.id||null,name:t?.name||'',original:t?.name||''};screen='table-form';renderAll()}
+    if(action==='save-table'){
+      const name=$('#table-name-input').value.trim();if(!name){$('#table-error').textContent='请填写表名。';return}
+      if(tables.some(t=>t.name===name&&t.id!==form.id)){$('#table-error').textContent='已有同名表，请换一个名称。';return}
+      if(form.id)tables.find(t=>t.id===form.id).name=name;else tables.push({id:`table-${++seq}`,name});screen='tables';renderAll();toast('表已保存');
+    }
+    if(action==='delete-table'){const t=tables.find(x=>x.id===id),count=tasks.filter(x=>x.table===id).length;pending={op:'delete-table',id,title:'删除这张表？',body:`“${t.name}”\n包含 ${count} 项任务（含已完成）。\n确认后删除表及全部任务，无法恢复。`,accept:'删除表和任务',danger:true,returnScreen:'tables'};screen='confirm';renderAll()}
+    if(action==='cancel-confirm'){screen=pending.returnScreen||null;if(screen)renderAll();else finish()}
+    if(action==='accept-confirm')acceptConfirm();
+  });
+  // 网页 Escape 模拟 Android 返回；实际系统返回行为由 T-004 验证。
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!['home','idle'].includes(screen)){e.preventDefault();back()}});
+  reset();
+</script>
+</body>
+</html>

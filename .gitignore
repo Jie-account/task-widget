@@ -1,0 +1,18 @@
+# 浏览器审阅时产生的临时输出
+.playwright-mcp/
+/wireframes-overview.png
+
+# Android 本地配置与构建输出
+.gradle/
+.kotlin/
+**/build/
+local.properties
+.idea/
+*.iml
+
+# 本地密钥与环境配置
+*.jks
+*.keystore
+.env
+.env.*
+!.env.example
