@@ -13,6 +13,14 @@
 
 可复制的新会话接续说明见[当前状态文档第 5 节](docs/progress.md)。
 
+## 版本管理
+
+GitHub 私有仓库：[Jie-account/task-widget](https://github.com/Jie-account/task-widget)，主分支为 `main`。
+
+```bash
+git clone git@github.com:Jie-account/task-widget.git
+```
+
 ## 按问题查找
 
 | 要了解什么 | 正文入口 |
