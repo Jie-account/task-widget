@@ -3,6 +3,7 @@
 /wireframes-overview.png
 
 # Android 本地配置与构建输出
+.tools/
 .gradle/
 .kotlin/
 **/build/

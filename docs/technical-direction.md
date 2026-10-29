@@ -10,9 +10,9 @@
 | 方面 | 方向 |
 |---|---|
 | 语言与平台 | Kotlin 原生安卓，优先使用 AndroidX / Jetpack |
-| App 界面 | 优先考虑 Jetpack Compose |
-| 组件 | 标准 Android App Widget；Glance 或 RemoteViews 通过技术原型选择 |
-| 数据 | 应用私有存储，本地持久化，优先考虑 Room |
+| App 界面 | T-004 原型采用 Jetpack Compose |
+| 组件 | T-004 原型采用标准 App Widget + RemoteViews + ListView/RemoteViewsService；关键宿主行为待 P60 实测 |
+| 数据 | 应用私有存储；T-004 演示数据使用版本化 JSON，T-005 再确定 Room 与正式数据迁移 |
 | 职责划分 | 共用任务归类、排序、日期、完成恢复规则；App 界面、组件显示与更新分别组织 |
 | 扩展基础 | 稳定标识、日期精度、创建/完成/人工排序信息、数据版本与迁移机制 |
 | 跨品牌 | 同一套核心实现，依据实测增加小范围兼容处理 |
@@ -29,11 +29,15 @@
 | 屏幕 | 用户提供：2700 × 1220 像素 |
 | 桌面网格和组件最大区域 | 后续真机检测 |
 | Android 兼容 API 级别 | 后续实际检测，不能由 HarmonyOS 版本号直接换算 |
-| 工具链、SDK、JDK、ADB、设备连接 | 尚未检测；配置依据由后续任务记录 |
+| 工具链、SDK、JDK、ADB、设备连接 | 已检测到 JDK 17；本项目 SDK 与构建工具放入忽略的 `.tools`，ADB 可启动且设备列表为空；构建入口见[开发文档](development.md) |
 
 ## 3. 安卓组件约束
 
 T-003 已形成[线框与交互方案](wireframes.md)及[浏览器验证记录](design/review.md)。D01–D13 为设计默认值，供 T-004 验证可执行布局；本文各技术候选与待实测项保持原状态。
+
+T-004 将固定标签放在集合列表外，使用 RemoteViewsService 提供纵向 ListView，行内独立点击通过 PendingIntent 模板与 fill-in Intent 进入 App。此方案直接对应一页布局与四类行内目标，沿用 API 26 起的标准路径。Glance 同样基于 RemoteViews；本轮选择依据是控件和点击的直接控制，未执行 Glance 性能对比。原文见[Android 集合组件](https://developer.android.com/develop/ui/views/appwidgets/collections)。
+
+原型最低 API 暂定 26，以直接使用 java.time；P60 自身 API 级别仍待检测。工具版本、compile/target 与依赖参数以[App 构建配置](../app/build.gradle.kts)、[根插件配置](../build.gradle.kts)和[Wrapper](../gradle/wrapper/gradle-wrapper.properties)为准。实际环境与结果见 [T-004 构建记录](verification/t004-build.md)。
 
 ### 3.1 添加与页面承载
 
@@ -55,7 +59,7 @@ T-003 已形成[线框与交互方案](wireframes.md)及[浏览器验证记录](
 
 省电策略、后台限制和桌面缓存可能延迟刷新，需在目标真机测量实际表现；目前未承诺后台精确到秒。常驻前台服务或精确闹钟权限由后续实际需求决定。
 
-未设置时分与设置 00:00 分别表达。原型按手机当前本地时间判断为建议，具体时区处理在技术方案中明确。
+未设置时分与设置 00:00 分别表达。T-004 原型按设备当前本地时间判断，时区变化后重新计算；正式调度与实际刷新精度仍需验证。
 
 ### 3.4 系统与生命周期
 
@@ -81,7 +85,7 @@ T-003 已形成[线框与交互方案](wireframes.md)及[浏览器验证记录](
 | 后续小米设备 | 明确型号与系统版本：最大区域、网格边距、滚动、跳转、省电下刷新、跨天着色 |
 | 其他品牌或桌面 | 根据实际使用需求纳入 |
 
-本轮文档整理阶段尚未执行构建、模拟器或真机验证。每次实测记录设备、API、构建版本、操作步骤、实际结果和相关证据。
+2026-10-29 用户安排本轮先完成可构建原型，P60 实测暂缓；本轮未运行模拟器。构建结果与后续宿主验证分别记录，工程入口见[开发文档](development.md)。每次实测记录设备、API、构建版本、操作步骤、实际结果和相关证据。
 
 ## 6. 后续技术核查原文入口
 
@@ -90,5 +94,7 @@ T-003 已形成[线框与交互方案](wireframes.md)及[浏览器验证记录](
 | 标准组件的接口、布局和交互 | [App widgets overview](https://developer.android.com/develop/ui/views/appwidgets/overview) |
 | Glance 的组件实现能力 | [Jetpack Glance](https://developer.android.com/develop/ui/compose/glance) |
 | Room 本地数据与迁移 | [Room](https://developer.android.com/training/data-storage/room) |
+| 当前构建版本的兼容组合 | [AGP 9.0 发布说明](https://developer.android.com/build/releases/agp-9-0-0-release-notes) |
+| Windows 下 Gradle 8 系列缓存目录移动失败 | [Gradle 官方问题 #31438](https://github.com/gradle/gradle/issues/31438)，修复里程碑为 9.1 |
 
-以上作为后续核查入口；本轮未进行依赖版本和最新接口文档核查。
+T-004 已核对集合组件文档、AGP 兼容表及上述 Gradle 问题；其余候选随相应工程任务展开。

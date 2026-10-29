@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="52dp" android:gravity="center_vertical"
+    android:background="@drawable/task_row_background">
+    <TextView android:id="@+id/task_check" style="@style/WidgetAction" android:text="☐" />
+    <TextView android:id="@+id/task_title" android:layout_width="0dp" android:layout_height="48dp"
+        android:layout_weight="1" android:gravity="center_vertical" android:paddingHorizontal="4dp"
+        android:maxLines="1" android:ellipsize="end" android:textSize="14sp" android:textColor="#FFFFFF" />
+    <TextView android:id="@+id/task_date" android:layout_width="100dp" android:layout_height="48dp"
+        android:gravity="center" android:maxLines="1" android:textSize="12sp" android:textColor="#FFB366" />
+    <TextView android:id="@+id/task_delete" style="@style/WidgetAction" android:layout_width="36dp"
+        android:text="×" android:textColor="#AAAAAA" />
+</LinearLayout>
