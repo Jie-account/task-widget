@@ -146,10 +146,10 @@ private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit,
         }
     }) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text("所属表：$tableName · ${if (initial.done) "已完成" else "未完成"}", Modifier.padding(top = 12.dp))
+            Text("所属表：$tableName", Modifier.padding(top = 12.dp))
             OutlinedTextField(title, { title = it }, label = { Text("标题 · 必填") }, modifier = Modifier.fillMaxWidth().focusRequester(titleFocus), minLines = 2)
             OutlinedTextField(description, { description = it }, label = { Text("描述 · 选填") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
-            Text(if (date.isBlank()) "未设置日期" else "$date · ${time.ifBlank { "无时分" }}")
+            Text(if (date.isBlank()) "未设置日期" else if (time.isBlank()) date else "$date $time")
             OutlinedButton(onClick = { showDate = true }) { Text(if (date.isBlank()) "设置日期" else "修改日期") }
             if (onDelete != null) TextButton(onClick = { delete = true }) { Text("删除任务", color = MaterialTheme.colorScheme.error) }
             Spacer(Modifier.height(16.dp))

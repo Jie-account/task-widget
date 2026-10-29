@@ -117,7 +117,9 @@ class MainActivity : ComponentActivity() {
                         TextButton(onClick = { open("menu") }, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(40.dp)) { Text("⋯", color = Color.White) }
                     }
                     if (visible.isEmpty()) {
-                        Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) { Text("还没有${view.label}任务", color = Color.Gray) }
+                        Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                            Text(if (view == TaskView.DONE) "当前没有已完成任务" else "点击右上方+添加任务", color = Color.Gray)
+                        }
                     } else LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = listState) {
                         items(visible, key = { it.id }) { task ->
                             Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {

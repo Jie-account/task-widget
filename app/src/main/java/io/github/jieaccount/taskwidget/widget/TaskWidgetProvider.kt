@@ -108,11 +108,7 @@ class TaskWidgetProvider : AppWidgetProvider() {
             val rowIntent = FlowActivity.intent(context, "row", selection.tableId, selection.view, widgetId = id)
             views.setPendingIntentTemplate(R.id.task_list, PendingIntent.getActivity(context, 0, rowIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE))
-            val message = when (selection.view) {
-                TaskView.DATED -> "还没有有日期任务\n点击右上方 ＋ 添加任务"
-                TaskView.UNDATED -> "还没有无日期任务\n点击右上方 ＋ 添加任务"
-                TaskView.DONE -> "还没有已完成任务\n完成的任务会显示在这里"
-            }
+            val message = if (selection.view == TaskView.DONE) "当前没有已完成任务" else "点击右上方+添加任务"
             views.setTextViewText(R.id.empty_list, message)
             views.setEmptyView(R.id.task_list, R.id.empty_list)
             if (resetScroll) views.setScrollPosition(R.id.task_list, 0)

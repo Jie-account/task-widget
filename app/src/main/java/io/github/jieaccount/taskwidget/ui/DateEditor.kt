@@ -45,7 +45,7 @@ fun DateEditor(date: String, time: String, onBack: () -> Unit, onConfirm: (DateC
         }
     }) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text("${preview?.let { "${it.date} · ${it.time ?: "无时分"}" } ?: "请填写有效日期"}\n确认后返回任务草稿，保存任务后生效。", Modifier.padding(top = 16.dp))
+            Text("${preview?.let { if (it.time == null) it.date.toString() else "${it.date} ${it.time}" } ?: "请填写有效日期"}\n确认后返回任务草稿，保存任务后生效。", Modifier.padding(top = 16.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DateNumber("年", year, { year = it }, { delta -> year = draft.step("year", delta).year }, Modifier.weight(1.3f))
                 DateNumber("月", month, { month = it }, { delta -> month = draft.step("month", delta).month }, Modifier.weight(1f))

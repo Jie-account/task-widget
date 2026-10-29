@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.jieaccount.taskwidget.prototype"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.2.2-local"
+        versionCode = 5
+        versionName = "0.2.3-local"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true }
