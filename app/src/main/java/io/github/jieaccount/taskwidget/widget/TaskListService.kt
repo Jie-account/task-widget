@@ -8,7 +8,7 @@ import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import io.github.jieaccount.taskwidget.R
-import io.github.jieaccount.taskwidget.data.PrototypeStore
+import io.github.jieaccount.taskwidget.data.TaskStore
 import io.github.jieaccount.taskwidget.data.TaskItem
 import io.github.jieaccount.taskwidget.data.TaskRules
 import io.github.jieaccount.taskwidget.data.TaskView
@@ -25,9 +25,9 @@ private class TaskFactory(private val context: Context, private val widgetId: In
     private var view = TaskView.DATED
     override fun onCreate() = onDataSetChanged()
     override fun onDataSetChanged() {
-        val selection = PrototypeStore.selection(context, widgetId)
+        val selection = TaskStore.selection(context, widgetId)
         view = selection.view
-        items = TaskRules.visible(PrototypeStore.load(context).tasks, selection.tableId, view)
+        items = TaskRules.visible(TaskStore.load(context).tasks, selection.tableId, view)
     }
     override fun onDestroy() { items = emptyList() }
     override fun getCount() = items.size

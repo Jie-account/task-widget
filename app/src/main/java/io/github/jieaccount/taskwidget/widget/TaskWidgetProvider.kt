@@ -13,7 +13,7 @@ import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import io.github.jieaccount.taskwidget.R
-import io.github.jieaccount.taskwidget.data.PrototypeStore
+import io.github.jieaccount.taskwidget.data.TaskStore
 import io.github.jieaccount.taskwidget.data.TaskRules
 import io.github.jieaccount.taskwidget.data.TaskView
 import io.github.jieaccount.taskwidget.ui.FlowActivity
@@ -22,6 +22,7 @@ import io.github.jieaccount.taskwidget.ui.FlowActivity
 class TaskWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
         ids.forEach { refresh(context, it) }
+        WidgetRefreshScheduler.schedule(context)
     }
 
     override fun onAppWidgetOptionsChanged(context: Context, manager: AppWidgetManager, id: Int, options: Bundle) {
@@ -32,24 +33,28 @@ class TaskWidgetProvider : AppWidgetProvider() {
         refresh(context, id)
     }
 
-    override fun onDeleted(context: Context, ids: IntArray) = ids.forEach { PrototypeStore.forgetWidget(context, it) }
+    override fun onDeleted(context: Context, ids: IntArray) {
+        ids.forEach { TaskStore.forgetWidget(context, it) }
+        WidgetRefreshScheduler.schedule(context)
+    }
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (intent.action == NAVIGATE) {
             val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             if (id == AppWidgetManager.INVALID_APPWIDGET_ID) return
-            val state = PrototypeStore.load(context)
-            val old = PrototypeStore.selection(context, id)
+            val state = TaskStore.load(context)
+            val old = TaskStore.selection(context, id)
             val next = when (intent.getStringExtra("kind")) {
                 "table" -> old.copy(tableId = intent.getLongExtra("table", old.tableId))
                 "view" -> old.copy(view = TaskView.valueOf(intent.getStringExtra("view")!!))
                 "page" -> old.copy(page = (old.page + intent.getIntExtra("delta", 0)).coerceIn(0, TaskRules.pageCount(state.tables.size) - 1))
                 else -> old
             }
-            PrototypeStore.select(context, id, next)
+            TaskStore.select(context, id, next)
             refresh(context, id, resetScroll = intent.getStringExtra("kind") != "page")
-        } else if (intent.action in listOf(Intent.ACTION_DATE_CHANGED, Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED)) {
+        } else if (intent.action in listOf(Intent.ACTION_DATE_CHANGED, Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED,
+                Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED, WidgetRefreshScheduler.ACTION)) {
             refreshAll(context)
         }
     }
@@ -59,12 +64,13 @@ class TaskWidgetProvider : AppWidgetProvider() {
         fun refreshAll(context: Context) {
             AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, TaskWidgetProvider::class.java))
                 .forEach { refresh(context, it) }
+            WidgetRefreshScheduler.schedule(context)
         }
 
         @Suppress("DEPRECATION") // 保留 API 26 起的集合组件路径，API 35 仍支持。
         fun refresh(context: Context, id: Int, resetScroll: Boolean = false) {
-            val state = PrototypeStore.load(context)
-            val selection = PrototypeStore.selection(context, id)
+            val state = TaskStore.load(context)
+            val selection = TaskStore.selection(context, id)
             val views = RemoteViews(context.packageName, R.layout.task_widget)
             val manager = AppWidgetManager.getInstance(context)
             val tabs = intArrayOf(R.id.table_one, R.id.table_two, R.id.table_three)
@@ -114,7 +120,7 @@ class TaskWidgetProvider : AppWidgetProvider() {
         }
 
         private fun flow(context: Context, id: Int, action: String): PendingIntent {
-            val selection = PrototypeStore.selection(context, id)
+            val selection = TaskStore.selection(context, id)
             return PendingIntent.getActivity(context, 0, FlowActivity.intent(context, action, selection.tableId, selection.view, widgetId = id),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }

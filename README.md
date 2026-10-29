@@ -28,7 +28,7 @@ git clone git@github.com:Jie-account/task-widget.git
 | 用户已确认哪些行为、怎样验收 | [首版需求](docs/requirements.md) |
 | 桌面组件与 App 怎样布局、怎样操作 | [线框设计与交互说明](docs/wireframes.md)；[交互线框](docs/design/wireframes.html) |
 | 原生安卓、桌面组件、跨品牌兼容与设备条件 | [技术方向](docs/technical-direction.md) |
-| 怎样构建、怎样定位原型代码与连机使用 | [工程构建与原型使用](docs/development.md) |
+| 怎样构建、定位代码与连机使用 | [工程构建与使用](docs/development.md)；[T-005 离线验证](docs/verification/t005-offline.md) |
 | 当前做到哪里、下一项任务与未定条件 | [当前状态与唯一任务清单](docs/progress.md) |
 | 谁做了什么、结果在哪里 | [会话行动记录](docs/session-log.md) |
 | 暂缓与候选功能 | [后续扩展方向](docs/future-directions.md) |

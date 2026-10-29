@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
-        android:label="任务组件·原型"
+        android:label="任务组件"
         android:theme="@style/AppTheme"
         android:supportsRtl="true">
         <activity android:name=".ui.MainActivity" android:exported="true">
@@ -12,6 +13,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.TableManagementActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.FlowActivity" android:exported="false" android:windowSoftInputMode="adjustResize"
             android:taskAffinity="${applicationId}.widgetflow" android:excludeFromRecents="true" />
         <receiver android:name=".widget.TaskWidgetProvider" android:exported="false">
@@ -20,6 +22,8 @@
                 <action android:name="android.intent.action.DATE_CHANGED" />
                 <action android:name="android.intent.action.TIME_SET" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/task_widget_info" />
         </receiver>

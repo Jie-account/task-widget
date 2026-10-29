@@ -18,6 +18,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.jieaccount.taskwidget.data.*
@@ -37,14 +39,18 @@ class FlowActivity : ComponentActivity() {
         if (intent.getBooleanExtra("fromWidget", false) && isTaskRoot) finishAndRemoveTask() else finish()
     }
     private fun saved() {
-        TaskWidgetProvider.refreshAll(this)
+        // 数据已经提交；组件更新失败单独记录，不把已成功保存显示为失败。
+        runCatching { TaskWidgetProvider.refreshAll(this) }.onFailure { android.util.Log.e("TaskWidget", "保存后刷新失败", it) }
         Toast.makeText(this, "已保存", Toast.LENGTH_SHORT).show()
         exitFlow()
     }
 
     @Composable
     private fun Flow() {
-        val state = remember { PrototypeStore.load(this) }
+        var revision by remember { mutableIntStateOf(0) }
+        val loaded = remember(revision) { runCatching { TaskStore.load(this) }.onFailure { android.util.Log.e("TaskWidget", "读取任务失败", it) } }
+        val state = loaded.getOrNull()
+        if (state == null) { DataReadError(::exitFlow, { revision++ }); return }
         val existing = state.tasks.find { it.id == intent.getLongExtra("taskId", 0) }
         val tableId = existing?.tableId ?: intent.getLongExtra("tableId", state.tables.first().id)
         val view = TaskView.entries.firstOrNull { it.name == intent.getStringExtra("view") } ?: TaskView.DATED
@@ -57,7 +63,11 @@ class FlowActivity : ComponentActivity() {
         when (action) {
             "add", "edit" -> {
                 val initial = existing ?: TaskItem(0, tableId, "", date = if (view == TaskView.DATED) LocalDate.now() else null, createdOrder = 0)
-                TaskEditor(initial, tableName, ::exitFlow) { PrototypeStore.saveTask(this, it); saved() }
+                TaskEditor(initial, tableName, ::exitFlow,
+                    onDelete = if (existing == null) null else { {
+                        runCatching { TaskStore.act(this, initial.id, "delete") }.fold({ saved(); null }, { it.message ?: "删除失败，请重试。" })
+                    } },
+                    onSave = { edited -> runCatching { TaskStore.saveTask(this, edited) }.fold({ saved(); null }, { it.message ?: "保存失败，请重试。" }) })
             }
             "menu" -> {
                 BackHandler(onBack = ::exitFlow)
@@ -69,10 +79,11 @@ class FlowActivity : ComponentActivity() {
                 }
             }
             "sort" -> SortEditor(tableId, tableName, TaskRules.visible(state.tasks, tableId, TaskView.UNDATED), ::exitFlow) { ids ->
-                if (PrototypeStore.reorder(this, tableId, ids)) { saved(); true } else false
+                if (runCatching { TaskStore.reorder(this, tableId, ids) }.getOrDefault(false)) { saved(); true } else false
             }
             "complete", "restore", "cancel_date", "delete" -> {
                 val task = existing!!
+                var error by remember { mutableStateOf("") }
                 val wording = when (action) {
                     "complete" -> Triple("完成这项任务？", "确认后进入已完成最上方。", "确认完成")
                     "restore" -> Triple("恢复为未完成？", if (task.date != null) "保留原日期，回到有日期并按日期排序。" else "回到无日期最上方。", "确认恢复")
@@ -80,8 +91,8 @@ class FlowActivity : ComponentActivity() {
                     else -> Triple("删除这项任务？", "删除后无法恢复。", "删除任务")
                 }
                 FlowPage("确认操作", ::exitFlow) { Text("$tableName / ${view.label}", Modifier.padding(vertical = 18.dp)) }
-                OperationDialog(wording.first, "“${task.title}”\n${wording.second}", wording.third, {
-                    PrototypeStore.act(this, task.id, action); saved()
+                OperationDialog(wording.first, "“${task.title}”\n${wording.second}${if (error.isNotEmpty()) "\n$error" else ""}", wording.third, {
+                    runCatching { TaskStore.act(this, task.id, action) }.onSuccess { saved() }.onFailure { error = it.message ?: "操作失败，请重试。" }
                 }, ::exitFlow, destructive = action == "delete")
             }
         }
@@ -105,25 +116,29 @@ class FlowActivity : ComponentActivity() {
 }
 
 @Composable
-private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit, onSave: (TaskItem) -> Unit) {
+private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit, onDelete: (() -> String?)?, onSave: (TaskItem) -> String?) {
     var title by rememberSaveable { mutableStateOf(initial.title) }
     var description by rememberSaveable { mutableStateOf(initial.description) }
     var date by rememberSaveable { mutableStateOf(initial.date?.toString().orEmpty()) }
     var time by rememberSaveable { mutableStateOf(initial.time?.toString().orEmpty()) }
     var error by rememberSaveable { mutableStateOf("") }
     var discard by rememberSaveable { mutableStateOf(false) }
-    var clearDate by rememberSaveable { mutableStateOf(false) }
+    var showDate by rememberSaveable { mutableStateOf(false) }
+    var delete by rememberSaveable { mutableStateOf(false) }
+    val titleFocus = remember { FocusRequester() }
     val dirty = title != initial.title || description != initial.description || date != initial.date?.toString().orEmpty() || time != initial.time?.toString().orEmpty()
     // 显式捕获当前草稿状态，确保系统返回回调随编辑状态更新。
     val leave = { if (dirty) discard = true else onExit() }
-    fun save(clearApproved: Boolean = false) {
-        if (title.isBlank()) { error = "请填写任务标题。"; return }
-        val parsedDate = if (date.isBlank()) null else runCatching { LocalDate.parse(date.trim()) }.getOrNull()
-        if (date.isNotBlank() && (parsedDate == null || !date.trim().matches(Regex("\\d{4}-\\d{2}-\\d{2}")))) { error = "请填写有效日期，格式为 YYYY-MM-DD。"; return }
-        val parsedTime = if (time.isBlank()) null else runCatching { LocalTime.parse(time.trim()) }.getOrNull()
-        if (time.isNotBlank() && (parsedDate == null || parsedTime == null || !time.trim().matches(Regex("([01]\\d|2[0-3]):[0-5]\\d")))) { error = "设置时分时请先填写日期，并完整填写 HH:mm（24 小时制）。"; return }
-        if (initial.date != null && parsedDate == null && !clearApproved) { clearDate = true; return }
-        onSave(initial.copy(title = title.trim(), description = description, date = parsedDate, time = parsedTime))
+    fun save() {
+        if (title.isBlank()) { error = "请填写任务标题。"; titleFocus.requestFocus(); return }
+        error = onSave(initial.copy(title = title.trim(), description = description,
+            date = date.takeIf { it.isNotBlank() }?.let(LocalDate::parse), time = time.takeIf { it.isNotBlank() }?.let(LocalTime::parse))).orEmpty()
+    }
+    if (showDate) {
+        DateEditor(date, time, { showDate = false }) { choice ->
+            date = choice?.date?.toString().orEmpty(); time = choice?.time?.toString().orEmpty(); showDate = false
+        }
+        return
     }
     BackHandler(onBack = leave)
     FlowPage(if (initial.id == 0L) "添加任务" else "任务详情", leave, footer = {
@@ -131,16 +146,19 @@ private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit,
     }) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("所属表：$tableName · ${if (initial.done) "已完成" else "未完成"}", Modifier.padding(top = 12.dp))
-            OutlinedTextField(title, { title = it }, label = { Text("标题 · 必填") }, modifier = Modifier.fillMaxWidth(), minLines = 2)
+            OutlinedTextField(title, { title = it }, label = { Text("标题 · 必填") }, modifier = Modifier.fillMaxWidth().focusRequester(titleFocus), minLines = 2)
             OutlinedTextField(description, { description = it }, label = { Text("描述 · 选填") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
-            OutlinedTextField(date, { date = it }, label = { Text("日期 · 可留空") }, placeholder = { Text("YYYY-MM-DD") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-            OutlinedTextField(time, { time = it }, label = { Text("时分 · 可留空") }, placeholder = { Text("HH:mm") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+            Text(if (date.isBlank()) "未设置日期" else "$date · ${time.ifBlank { "无时分" }}")
+            OutlinedButton(onClick = { showDate = true }) { Text(if (date.isBlank()) "设置日期" else "修改日期") }
+            if (onDelete != null) TextButton(onClick = { delete = true }) { Text("删除任务", color = MaterialTheme.colorScheme.error) }
             if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
             Spacer(Modifier.height(16.dp))
         }
     }
     if (discard) OperationDialog("放弃未保存修改？", "本次修改尚未保存。", "放弃修改", onExit, { discard = false }, "继续编辑")
-    if (clearDate) OperationDialog("取消这项任务的日期？", "“${initial.title}”\n${if (initial.done) "保存后仍在已完成。" else "保存后进入无日期最上方。"}", "取消日期", { clearDate = false; save(true) }, { clearDate = false })
+    if (delete) OperationDialog("删除这项任务？", "“${initial.title}”\n删除后无法恢复。", "删除任务", {
+        error = onDelete?.invoke().orEmpty(); delete = false
+    }, { delete = false }, destructive = true)
 }
 
 @Composable

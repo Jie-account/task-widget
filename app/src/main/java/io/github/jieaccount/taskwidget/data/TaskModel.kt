@@ -24,7 +24,10 @@ data class TaskItem(
     init { require(date != null || time == null) }
 }
 
-data class TaskSnapshot(val tables: List<TaskTable>, val tasks: List<TaskItem>, val sequence: Long)
+data class TaskSnapshot(
+    val tables: List<TaskTable>, val tasks: List<TaskItem>, val sequence: Long,
+    val selections: Map<Int, WidgetSelection> = emptyMap(),
+)
 data class WidgetSelection(val tableId: Long, val view: TaskView = TaskView.DATED, val page: Int = 0)
 
 /** App 与组件共用归类、排序和过期规则，避免两个入口各自解释日期。 */

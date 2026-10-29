@@ -27,6 +27,14 @@ fun PrototypeTheme(content: @Composable () -> Unit) {
     ), content = content)
 }
 
+@Composable
+fun DataReadError(onBack: () -> Unit, onRetry: () -> Unit) {
+    FlowPage("读取任务", onBack) {
+        Text("暂时无法读取任务，原数据已保留。", Modifier.padding(vertical = 24.dp))
+        Button(onClick = onRetry) { Text("重试") }
+    }
+}
+
 /** 输入页统一避让系统栏与键盘，底部保存按钮保持可达。 */
 @Composable
 fun FlowPage(title: String, onBack: () -> Unit, footer: (@Composable () -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
