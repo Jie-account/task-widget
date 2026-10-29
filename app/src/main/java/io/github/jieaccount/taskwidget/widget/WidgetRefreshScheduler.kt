@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import io.github.jieaccount.taskwidget.data.RefreshRules
 import io.github.jieaccount.taskwidget.data.TaskStore
 import java.time.ZonedDateTime
@@ -23,5 +24,6 @@ object WidgetRefreshScheduler {
         val next = RefreshRules.nextBoundary(TaskStore.load(context).tasks, ZonedDateTime.now()) ?: return
         // 系统允许唤醒，但省电模式和厂商后台策略仍可能推迟执行。
         alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.toEpochMilli(), pending)
+        Log.i("TaskWidget", "scheduledBoundary=${next.toEpochMilli()} now=${System.currentTimeMillis()} widgets=${ids.size}")
     }
 }

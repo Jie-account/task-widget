@@ -36,9 +36,13 @@ fun DateEditor(date: String, time: String, onBack: () -> Unit, onConfirm: (DateC
     val preview = runCatching { draft.parse() }.getOrNull()
     BackHandler(onBack = leave)
     FlowPage("设置日期", leave, footer = {
-        Button(onClick = {
-            runCatching { draft.parse() }.onSuccess { onConfirm(it) }.onFailure { error = it.message.orEmpty() }
-        }, modifier = Modifier.fillMaxWidth()) { Text("确认日期") }
+        Column(Modifier.fillMaxWidth()) {
+            // 校验提示与提交按钮一起避让键盘，长表单也能看到失败原因。
+            if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(bottom = 8.dp))
+            Button(onClick = {
+                runCatching { draft.parse() }.onSuccess { onConfirm(it) }.onFailure { error = it.message.orEmpty() }
+            }, modifier = Modifier.fillMaxWidth()) { Text("确认日期") }
+        }
     }) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("${preview?.let { "${it.date} · ${it.time ?: "无时分"}" } ?: "请填写有效日期"}\n确认后返回任务草稿，保存任务后生效。", Modifier.padding(top = 16.dp))
@@ -57,7 +61,6 @@ fun DateEditor(date: String, time: String, onBack: () -> Unit, onConfirm: (DateC
                 OutlinedTextField(minute, { minute = it }, label = { Text("分") }, modifier = Modifier.weight(1f), singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
             }
-            if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
             TextButton(onClick = { if (date.isNotBlank()) clear = true else onConfirm(null) }) { Text("不设置日期") }
         }
     }

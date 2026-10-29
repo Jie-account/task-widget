@@ -142,7 +142,10 @@ private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit,
     }
     BackHandler(onBack = leave)
     FlowPage(if (initial.id == 0L) "添加任务" else "任务详情", leave, footer = {
-        Button(onClick = { save() }, modifier = Modifier.fillMaxWidth()) { Text("保存") }
+        Column(Modifier.fillMaxWidth()) {
+            if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(bottom = 8.dp))
+            Button(onClick = { save() }, modifier = Modifier.fillMaxWidth()) { Text("保存") }
+        }
     }) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("所属表：$tableName · ${if (initial.done) "已完成" else "未完成"}", Modifier.padding(top = 12.dp))
@@ -151,7 +154,6 @@ private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit,
             Text(if (date.isBlank()) "未设置日期" else "$date · ${time.ifBlank { "无时分" }}")
             OutlinedButton(onClick = { showDate = true }) { Text(if (date.isBlank()) "设置日期" else "修改日期") }
             if (onDelete != null) TextButton(onClick = { delete = true }) { Text("删除任务", color = MaterialTheme.colorScheme.error) }
-            if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
             Spacer(Modifier.height(16.dp))
         }
     }
