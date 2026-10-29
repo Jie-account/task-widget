@@ -27,7 +27,7 @@ import io.github.jieaccount.taskwidget.widget.TaskWidgetProvider
 import java.time.LocalDate
 import java.time.LocalTime
 
-/** 组件操作放入独立任务栈；App 内入口沿用首页任务栈。 */
+/** 透明窗口保留原入口背景；完整页面自行铺黑底，确认操作只绘制弹窗。 */
 class FlowActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +75,6 @@ class FlowActivity : ComponentActivity() {
                     Text("$tableName / ${view.label}", Modifier.padding(vertical = 18.dp))
                     if (view == TaskView.UNDATED) Button(onClick = { action = "sort" }, modifier = Modifier.fillMaxWidth()) { Text("修改排序") }
                     else Text("当前子表暂无可用操作")
-                    TextButton(onClick = ::exitFlow) { Text(if (view == TaskView.UNDATED) "关闭" else "知道了") }
                 }
             }
             "sort" -> SortEditor(tableId, tableName, TaskRules.visible(state.tasks, tableId, TaskView.UNDATED), ::exitFlow) { ids ->
@@ -90,7 +89,6 @@ class FlowActivity : ComponentActivity() {
                     "cancel_date" -> Triple("取消这项任务的日期？", "确认后进入无日期最上方。", "取消日期")
                     else -> Triple("删除这项任务？", "删除后无法恢复。", "删除任务")
                 }
-                FlowPage("确认操作", ::exitFlow) { Text("$tableName / ${view.label}", Modifier.padding(vertical = 18.dp)) }
                 OperationDialog(wording.first, "“${task.title}”\n${wording.second}${if (error.isNotEmpty()) "\n$error" else ""}", wording.third, {
                     runCatching { TaskStore.act(this, task.id, action) }.onSuccess { saved() }.onFailure { error = it.message ?: "操作失败，请重试。" }
                 }, ::exitFlow, destructive = action == "delete")

@@ -12,18 +12,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-/** App 始终使用浅色主题，系统栏图标同步使用深色以保证可读性。 */
+/** App 页面统一黑底，系统栏使用浅色图标。 */
 fun ComponentActivity.enablePrototypeEdgeToEdge() {
     enableEdgeToEdge(
-        statusBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
-        navigationBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
+        statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+        navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
     )
 }
 
 @Composable
 fun PrototypeTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = lightColorScheme(
-        primary = Color(0xFF333333), background = Color(0xFFFAF9F6), surface = Color(0xFFFAF9F6),
+    MaterialTheme(colorScheme = darkColorScheme(
+        primary = Color.White, onPrimary = Color.Black,
+        secondary = Color(0xFFD0D0D0), onSecondary = Color.Black,
+        background = Color.Black, onBackground = Color.White,
+        surface = Color.Black, onSurface = Color.White,
+        surfaceVariant = Color(0xFF202020), onSurfaceVariant = Color(0xFFC7C7C7),
+        outline = Color(0xFF808080), error = Color(0xFFFF8585), onError = Color.Black,
+        surfaceTint = Color.Transparent,
     ), content = content)
 }
 
@@ -56,9 +62,11 @@ fun FlowPage(title: String, onBack: () -> Unit, footer: (@Composable () -> Unit)
 fun OperationDialog(title: String, message: String, accept: String, onConfirm: () -> Unit, onCancel: () -> Unit, cancel: String = "取消", destructive: Boolean = false) {
     AlertDialog(
         onDismissRequest = onCancel,
+        containerColor = Color(0xFF1C1C1C),
+        tonalElevation = 0.dp,
         title = { Text(title) },
         text = { Text(message, Modifier.heightIn(max = 280.dp).verticalScroll(rememberScrollState())) },
-        confirmButton = { TextButton(onClick = onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = if (destructive) Color(0xFFAA3930) else MaterialTheme.colorScheme.primary)) { Text(accept) } },
+        confirmButton = { TextButton(onClick = onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = if (destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)) { Text(accept) } },
         dismissButton = { TextButton(onClick = onCancel) { Text(cancel) } },
     )
 }

@@ -14,7 +14,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.TableManagementActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".ui.FlowActivity" android:exported="false" android:windowSoftInputMode="adjustResize"
+        <activity android:name=".ui.FlowActivity" android:exported="false" android:theme="@style/AppTheme.Flow" android:windowSoftInputMode="adjustResize"
             android:taskAffinity="${applicationId}.widgetflow" android:excludeFromRecents="true" />
         <receiver android:name=".widget.TaskWidgetProvider" android:exported="false">
             <intent-filter>

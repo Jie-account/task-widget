@@ -4,7 +4,7 @@
 
 **首版完成标志：** 在用户的华为 P60 上完成[首版需求第 9 节](docs/requirements.md)的验收，交付可日常使用的安装包与简明使用说明。
 
-当前候选版本 **0.2.1-local**，已安装到 P60；长内容、新安装及重启检查通过，正在等待省电锁屏隔夜结果，见 [T-006 验收](docs/verification/t006-p60.md)。日常操作见[简明使用说明](docs/user-guide.md)，本机留存包位于 `dist/task-widget-0.2.1-local/`。
+当前候选版本 **0.2.2-local** 已构建，统一黑色页面、菜单返回与原入口确认弹窗；P60 暂留 `0.2.1-local` 完成省电隔夜观察，明早回读后再安装新版检查。长内容、新安装及重启结果见 [T-006 验收](docs/verification/t006-p60.md)。日常操作见[简明使用说明](docs/user-guide.md)，新版本机留存包位于 `dist/task-widget-0.2.2-local/`。
 
 ## 从这里接续
 
