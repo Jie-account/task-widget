@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- 独立应用标识与私有目录用于新安装验收，界面名称便于区分。 -->
+    <application android:label="任务组件·验收" tools:replace="android:label" />
+</manifest>

@@ -4,6 +4,8 @@
 
 **首版完成标志：** 在用户的华为 P60 上完成[首版需求第 9 节](docs/requirements.md)的验收，交付可日常使用的安装包与简明使用说明。
 
+当前候选版本 **0.2.1-local**，已安装到 P60；长内容、新安装及重启检查通过，正在等待省电锁屏隔夜结果，见 [T-006 验收](docs/verification/t006-p60.md)。日常操作见[简明使用说明](docs/user-guide.md)，本机留存包位于 `dist/task-widget-0.2.1-local/`。
+
 ## 从这里接续
 
 
@@ -29,6 +31,7 @@ git clone git@github.com:Jie-account/task-widget.git
 | 桌面组件与 App 怎样布局、怎样操作 | [线框设计与交互说明](docs/wireframes.md)；[交互线框](docs/design/wireframes.html) |
 | 原生安卓、桌面组件、跨品牌兼容与设备条件 | [技术方向](docs/technical-direction.md) |
 | 怎样构建、定位代码与连机使用 | [工程构建与使用](docs/development.md)；[T-005 实机验证](docs/verification/t005-p60.md) |
+| 怎样安装和日常操作、当前验收结果 | [简明使用说明](docs/user-guide.md)；[T-006 验收](docs/verification/t006-p60.md) |
 | 当前做到哪里、下一项任务与未定条件 | [当前状态与唯一任务清单](docs/progress.md) |
 | 谁做了什么、结果在哪里 | [会话行动记录](docs/session-log.md) |
 | 暂缓与候选功能 | [后续扩展方向](docs/future-directions.md) |

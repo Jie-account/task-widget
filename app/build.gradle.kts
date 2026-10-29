@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.jieaccount.taskwidget.prototype"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2-local"
+        versionCode = 3
+        versionName = "0.2.1-local"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true }
@@ -22,6 +22,12 @@ android {
     }
     buildTypes {
         release { isMinifyEnabled = false }
+        create("acceptance") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".acceptance"
+            versionNameSuffix = "-acceptance"
+            matchingFallbacks += "debug"
+        }
     }
 }
 

@@ -39,7 +39,7 @@ class TaskWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == WidgetRefreshScheduler.ACTION) Log.i("TaskWidget", "boundaryReceived=${System.currentTimeMillis()}")
+        if (intent.action == WidgetRefreshScheduler.ACTION) WidgetRefreshScheduler.recordReceive(context)
         super.onReceive(context, intent)
         if (intent.action == NAVIGATE) {
             val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
