@@ -76,10 +76,10 @@ class TableManagementActivity : ComponentActivity() {
         }
         state.tables.find { it.id == deleting }?.let { table ->
             val count = state.tasks.count { it.tableId == table.id }
-            OperationDialog("删除这张表？", "“${table.name}”\n共 $count 项任务（含已完成）。表和所属任务将一并删除，无法恢复。", "删除表和任务", {
+            OperationDialog("删除这张表？", "“${table.name}”\n共 $count 项任务（含已完成）。表和所属任务将一并删除，无法恢复。", {
                 applyChange { TaskStore.deleteTable(this, table.id, count) }
                 deleting = null; revision++
-            }, { deleting = null }, destructive = true)
+            }, { deleting = null })
         }
     }
 }
@@ -97,5 +97,5 @@ private fun TableNameEditor(initial: String, isNew: Boolean, onBack: () -> Unit,
         OutlinedTextField(name, { name = it }, label = { Text("表名 · 必填") }, modifier = Modifier.fillMaxWidth().padding(top = 20.dp), minLines = 3)
         if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
     }
-    if (discard) OperationDialog("放弃未保存修改？", "表名尚未保存。", "放弃修改", onBack, { discard = false }, "继续编辑")
+    if (discard) OperationDialog("放弃未保存修改？", "表名尚未保存，确认后放弃修改。", onBack, { discard = false })
 }

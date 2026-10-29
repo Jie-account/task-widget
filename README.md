@@ -4,7 +4,7 @@
 
 **首版完成标志：** 在用户的华为 P60 上完成[首版需求第 9 节](docs/requirements.md)的验收，交付可日常使用的安装包与简明使用说明。
 
-当前候选版本 **0.2.3-local** 已安装到 P60：详情、空态精简文案及黑底／菜单返回／原入口确认弹窗均已实测，今晚继续自然跨零点和省电隔夜观察。结果见 [T-006 验收](docs/verification/t006-p60.md)，日常操作见[简明使用说明](docs/user-guide.md)，本机留存包位于 `dist/task-widget-0.2.3-local/`。
+当前候选版本 **0.2.4-local** 已安装到 P60：精简详情删除与首页表名，确认统一“取消／确认”，子表和 App 功能改为按钮下方弹出菜单。本轮构建与静态检查通过，界面查看和功能测试由用户人工进行，见 [T-006 记录](docs/verification/t006-p60.md)。操作见[使用说明](docs/user-guide.md)，本机留存包位于 `dist/task-widget-0.2.4-local/`。
 
 ## 从这里接续
 
@@ -28,7 +28,7 @@ git clone git@github.com:Jie-account/task-widget.git
 | 要了解什么 | 正文入口 |
 |---|---|
 | 用户已确认哪些行为、怎样验收 | [首版需求](docs/requirements.md) |
-| 桌面组件与 App 怎样布局、怎样操作 | [线框设计与交互说明](docs/wireframes.md)；[交互线框](docs/design/wireframes.html) |
+| 桌面组件与 App 怎样布局、怎样操作 | [当前交互说明](docs/wireframes.md)；[交互线框 v0.4 历史快照](docs/design/wireframes.html) |
 | 原生安卓、桌面组件、跨品牌兼容与设备条件 | [技术方向](docs/technical-direction.md) |
 | 怎样构建、定位代码与连机使用 | [工程构建与使用](docs/development.md)；[T-005 实机验证](docs/verification/t005-p60.md) |
 | 怎样安装和日常操作、当前验收结果 | [简明使用说明](docs/user-guide.md)；[T-006 验收](docs/verification/t006-p60.md) |

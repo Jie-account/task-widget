@@ -104,7 +104,7 @@ class TaskWidgetProvider : AppWidgetProvider() {
                 .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
                 .setData(Uri.parse("taskwidget://collection/$id"))
             views.setRemoteAdapter(R.id.task_list, adapter)
-            // 集合行需要 fill-in Intent；仅此模板可变，固定按钮均使用不可变 PendingIntent。
+            // 集合行需要 fill-in Intent；菜单另需接收系统提供的点击矩形。
             val rowIntent = FlowActivity.intent(context, "row", selection.tableId, selection.view, widgetId = id)
             views.setPendingIntentTemplate(R.id.task_list, PendingIntent.getActivity(context, 0, rowIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE))
@@ -118,8 +118,10 @@ class TaskWidgetProvider : AppWidgetProvider() {
 
         private fun flow(context: Context, id: Int, action: String): PendingIntent {
             val selection = TaskStore.selection(context, id)
+            // RemoteViews 通过 sourceBounds 传入菜单按钮位置，可变入口才能接收该矩形。
+            val mutability = if (action == "menu") PendingIntent.FLAG_MUTABLE else PendingIntent.FLAG_IMMUTABLE
             return PendingIntent.getActivity(context, 0, FlowActivity.intent(context, action, selection.tableId, selection.view, widgetId = id),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                PendingIntent.FLAG_UPDATE_CURRENT or mutability)
         }
 
         private fun navigation(context: Context, id: Int, kind: String, table: Long = 0, view: TaskView = TaskView.DATED, delta: Int = 0): PendingIntent {

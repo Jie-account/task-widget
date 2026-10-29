@@ -59,14 +59,14 @@ fun FlowPage(title: String, onBack: () -> Unit, footer: (@Composable () -> Unit)
 }
 
 @Composable
-fun OperationDialog(title: String, message: String, accept: String, onConfirm: () -> Unit, onCancel: () -> Unit, cancel: String = "取消", destructive: Boolean = false) {
+fun OperationDialog(title: String, message: String, onConfirm: () -> Unit, onCancel: () -> Unit) {
     AlertDialog(
         onDismissRequest = onCancel,
         containerColor = Color(0xFF1C1C1C),
         tonalElevation = 0.dp,
         title = { Text(title) },
         text = { Text(message, Modifier.heightIn(max = 280.dp).verticalScroll(rememberScrollState())) },
-        confirmButton = { TextButton(onClick = onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = if (destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)) { Text(accept) } },
-        dismissButton = { TextButton(onClick = onCancel) { Text(cancel) } },
+        confirmButton = { TextButton(onClick = onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text("确认") } },
+        dismissButton = { TextButton(onClick = onCancel) { Text("取消") } },
     )
 }

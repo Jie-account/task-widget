@@ -64,18 +64,11 @@ class FlowActivity : ComponentActivity() {
             "add", "edit" -> {
                 val initial = existing ?: TaskItem(0, tableId, "", date = if (view == TaskView.DATED) LocalDate.now() else null, createdOrder = 0)
                 TaskEditor(initial, tableName, ::exitFlow,
-                    onDelete = if (existing == null) null else { {
-                        runCatching { TaskStore.act(this, initial.id, "delete") }.fold({ saved(); null }, { it.message ?: "删除失败，请重试。" })
-                    } },
                     onSave = { edited -> runCatching { TaskStore.saveTask(this, edited) }.fold({ saved(); null }, { it.message ?: "保存失败，请重试。" }) })
             }
             "menu" -> {
                 BackHandler(onBack = ::exitFlow)
-                FlowPage("子表菜单", ::exitFlow) {
-                    Text("$tableName / ${view.label}", Modifier.padding(vertical = 18.dp))
-                    if (view == TaskView.UNDATED) Button(onClick = { action = "sort" }, modifier = Modifier.fillMaxWidth()) { Text("修改排序") }
-                    else Text("当前子表暂无可用操作")
-                }
+                WidgetSubtableMenu(intent.sourceBounds, view, ::exitFlow) { action = "sort" }
             }
             "sort" -> SortEditor(tableId, tableName, TaskRules.visible(state.tasks, tableId, TaskView.UNDATED), ::exitFlow) { ids ->
                 if (runCatching { TaskStore.reorder(this, tableId, ids) }.getOrDefault(false)) { saved(); true } else false
@@ -84,14 +77,14 @@ class FlowActivity : ComponentActivity() {
                 val task = existing!!
                 var error by remember { mutableStateOf("") }
                 val wording = when (action) {
-                    "complete" -> Triple("完成这项任务？", "确认后进入已完成最上方。", "确认完成")
-                    "restore" -> Triple("恢复为未完成？", if (task.date != null) "保留原日期，回到有日期并按日期排序。" else "回到无日期最上方。", "确认恢复")
-                    "cancel_date" -> Triple("取消这项任务的日期？", "确认后进入无日期最上方。", "取消日期")
-                    else -> Triple("删除这项任务？", "删除后无法恢复。", "删除任务")
+                    "complete" -> "完成这项任务？" to "确认后进入已完成最上方。"
+                    "restore" -> "恢复为未完成？" to if (task.date != null) "保留原日期，回到有日期并按日期排序。" else "回到无日期最上方。"
+                    "cancel_date" -> "取消这项任务的日期？" to "确认后进入无日期最上方。"
+                    else -> "删除这项任务？" to "删除后无法恢复。"
                 }
-                OperationDialog(wording.first, "“${task.title}”\n${wording.second}${if (error.isNotEmpty()) "\n$error" else ""}", wording.third, {
+                OperationDialog(wording.first, "“${task.title}”\n${wording.second}${if (error.isNotEmpty()) "\n$error" else ""}", {
                     runCatching { TaskStore.act(this, task.id, action) }.onSuccess { saved() }.onFailure { error = it.message ?: "操作失败，请重试。" }
-                }, ::exitFlow, destructive = action == "delete")
+                }, ::exitFlow)
             }
         }
     }
@@ -114,7 +107,7 @@ class FlowActivity : ComponentActivity() {
 }
 
 @Composable
-private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit, onDelete: (() -> String?)?, onSave: (TaskItem) -> String?) {
+private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit, onSave: (TaskItem) -> String?) {
     var title by rememberSaveable { mutableStateOf(initial.title) }
     var description by rememberSaveable { mutableStateOf(initial.description) }
     var date by rememberSaveable { mutableStateOf(initial.date?.toString().orEmpty()) }
@@ -122,7 +115,6 @@ private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit,
     var error by rememberSaveable { mutableStateOf("") }
     var discard by rememberSaveable { mutableStateOf(false) }
     var showDate by rememberSaveable { mutableStateOf(false) }
-    var delete by rememberSaveable { mutableStateOf(false) }
     val titleFocus = remember { FocusRequester() }
     val dirty = title != initial.title || description != initial.description || date != initial.date?.toString().orEmpty() || time != initial.time?.toString().orEmpty()
     // 显式捕获当前草稿状态，确保系统返回回调随编辑状态更新。
@@ -151,14 +143,10 @@ private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit,
             OutlinedTextField(description, { description = it }, label = { Text("描述 · 选填") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
             Text(if (date.isBlank()) "未设置日期" else if (time.isBlank()) date else "$date $time")
             OutlinedButton(onClick = { showDate = true }) { Text(if (date.isBlank()) "设置日期" else "修改日期") }
-            if (onDelete != null) TextButton(onClick = { delete = true }) { Text("删除任务", color = MaterialTheme.colorScheme.error) }
             Spacer(Modifier.height(16.dp))
         }
     }
-    if (discard) OperationDialog("放弃未保存修改？", "本次修改尚未保存。", "放弃修改", onExit, { discard = false }, "继续编辑")
-    if (delete) OperationDialog("删除这项任务？", "“${initial.title}”\n删除后无法恢复。", "删除任务", {
-        error = onDelete?.invoke().orEmpty(); delete = false
-    }, { delete = false }, destructive = true)
+    if (discard) OperationDialog("放弃未保存修改？", "本次修改尚未保存，确认后放弃修改。", onExit, { discard = false })
 }
 
 @Composable
@@ -189,5 +177,5 @@ private fun SortEditor(tableId: Long, tableName: String, initial: List<TaskItem>
             }
         }
     }
-    if (discard) OperationDialog("放弃未保存修改？", "本次排序尚未保存。", "放弃修改", onExit, { discard = false }, "继续编辑")
+    if (discard) OperationDialog("放弃未保存修改？", "本次排序尚未保存，确认后放弃修改。", onExit, { discard = false })
 }

@@ -34,7 +34,7 @@ SDK 路径由本机 `local.properties` 或 `ANDROID_HOME` 提供。需要复用�
 | 任务/表事务、顺序和入口选择 | [TaskRepository.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/TaskRepository.kt) |
 | 私有原子文件与旧数据迁移 | [TaskStore.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/TaskStore.kt)、[SnapshotCodec.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/SnapshotCodec.kt) |
 | App 首页与组件添加请求 | [MainActivity.kt](../app/src/main/java/io/github/jieaccount/taskwidget/ui/MainActivity.kt) |
-| 编辑、菜单、排序、确认与返回 | [FlowActivity.kt](../app/src/main/java/io/github/jieaccount/taskwidget/ui/FlowActivity.kt) |
+| 编辑、菜单、排序、确认与返回 | [FlowActivity.kt](../app/src/main/java/io/github/jieaccount/taskwidget/ui/FlowActivity.kt)、[弹出菜单](../app/src/main/java/io/github/jieaccount/taskwidget/ui/PopupMenus.kt) |
 | 表管理与日期候选 | [TableManagementActivity.kt](../app/src/main/java/io/github/jieaccount/taskwidget/ui/TableManagementActivity.kt)、[DateEditor.kt](../app/src/main/java/io/github/jieaccount/taskwidget/ui/DateEditor.kt)、[DateDraft.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/DateDraft.kt) |
 | 组件固定顶部、翻页与点击模板 | [TaskWidgetProvider.kt](../app/src/main/java/io/github/jieaccount/taskwidget/widget/TaskWidgetProvider.kt) |
 | 滚动集合与行内独立点击 | [TaskListService.kt](../app/src/main/java/io/github/jieaccount/taskwidget/widget/TaskListService.kt)、[组件布局](../app/src/main/res/layout/task_widget.xml)、[行布局](../app/src/main/res/layout/task_row.xml) |
@@ -44,13 +44,13 @@ SDK 路径由本机 `local.properties` 或 `ANDROID_HOME` 提供。需要复用�
 
 ## 3. 当前版本与数据
 
-当前构建为 `0.2.3-local`（versionCode 5），已安装 P60，显示名称为“任务组件”。应用标识继续使用 `io.github.jieaccount.taskwidget.prototype`，沿用原签名与组件类名，覆盖安装完整快照保持。T-005 已完成关键运行闭环；T-006 已补长内容、新安装、重启及界面反馈，今晚用新版继续隔夜观察，见[验收记录](verification/t006-p60.md)。新版候选包留在 `dist/task-widget-0.2.3-local/`，日常操作见[使用说明](user-guide.md)。
+当前构建为 `0.2.4-local`（versionCode 6），已覆盖安装 P60，显示名称为“任务组件”。应用标识继续使用 `io.github.jieaccount.taskwidget.prototype`，沿用签名和组件类名。本轮仅执行 `assembleDebug`、`lintDebug` 及安装版本核对，界面查看和功能测试由用户人工完成；此前运行结果保留各自版本条件，见[记录](verification/t006-p60.md)。新版留存包在 `dist/task-widget-0.2.4-local/`，操作见[说明](user-guide.md)。
 
 独立 `acceptance` 构建变体使用 `.acceptance` 应用标识后缀和“任务组件·验收”显示名，用于在独立私有目录验证首次启动，避免清空现用主应用。可在构建脚本的 `-Tasks` 列表增加 `assembleAcceptance`；该临时包已完成新安装验收并卸载，日常安装使用主包。
 
-新安装创建一张空的“默认”表。首页“表管理”可新建、重命名、上下移动、删除表；删除前确认完整表名与含已完成的任务数，始终保留至少一张。表删除后同时清理所属任务，并修正 App 与组件的选择。
+新安装创建一张空的“默认”表。首页顶部“…”→“表管理”可新建、重命名、上下移动、删除表；删除前确认完整表名与含已完成的任务数，始终保留至少一张。表删除后同时清理所属任务，并修正 App 与组件的选择。
 
-任务详情中点“设置日期/修改日期”，分别填写年、月、日，可通过加减按钮调整；开启时分时需填全时和分。候选先确认回到任务草稿，再保存任务。过去日期可用，无效月日保留输入并提示；仅日期与 `00:00` 分别保存。详情内支持删除，取消删除后保留编辑草稿。
+任务详情中点“设置日期/修改日期”，分别填写年月日；开启时分时需填全。候选先确认回到任务草稿，再保存任务。过去日期可用，无效月日保留输入并提示；仅日期与 `00:00` 分别保存。任务删除统一由列表“×”触发。
 
 正式数据位于应用私有目录 `files/tasks-v2.json`，通过 Android `AtomicFile` 整份提交，表、任务、顺序和入口选择共同保存。首次升级会读取旧 `capability_prototype_v1` 偏好中的 v1 快照和组件选择，保留原表、任务、日期精度与排序，并留下旧偏好；新文件存在后优先读取新文件。首页移除了演示数据重置入口，已有原型样例可通过正常表/任务操作处理。
 
@@ -58,7 +58,9 @@ App 与组件共用同一仓储、归类和日期规则；单进程内串行提�
 
 从组件打开的流程使用独立任务栈，结束时移除该流程；从 App 首页进入的流程结束时返回首页。当前日期页、表管理、任务流转和返回的实际结果见[T-005 实机记录](verification/t005-p60.md)。
 
-`0.2.2-local` 起 Compose 与原生窗口主题统一黑底，系统栏使用浅色图标，确认采用深灰表面与浅色／红色操作按钮。`FlowActivity` 使用透明窗口：编辑、日期、菜单、排序由 Scaffold 铺满黑底，行内确认只绘制 Dialog；表删除、详情删除与草稿退出继续叠原页。`0.2.3-local` 已在 P60 检查组件／App 的四类行内确认与取消／系统返回，实际保留原入口。
+`0.2.2-local` 起主题统一黑底，系统栏使用浅色图标。完整页面铺满黑底，确认通过透明流程窗口／Dialog 保留原入口；`0.2.3-local` 曾完成相应 P60 返回与显示检查。`0.2.4-local` 移除详情删除和首页重复表名，公共 OperationDialog 统一“取消／确认”，确认文字使用红色。
+
+App 顶部功能菜单及子表菜单使用锚定按钮的 DropdownMenu；组件子表菜单使用透明 FlowActivity，根据系统填入的 `Intent.sourceBounds` 将菜单定位在原按钮下方，点击外部结束菜单窗口。组件菜单 PendingIntent 允许接收该点击矩形，其他固定按钮保持原有不可变设置；菜单项选中后关闭，排序进入当前表。菜单显示、位置与外部关闭的实际效果由用户人工验收。
 
 `0.2.3-local` 详情所属表仅显示表名，日期按已有精度显示年月日或年月日时分，日期候选预览同步；无日期仍显示“未设置日期”。组件与 App 的有日期／无日期空态为“点击右上方+添加任务”，已完成空态为“当前没有已完成任务”；六个空态及详情精度已在 P60 验证。
 

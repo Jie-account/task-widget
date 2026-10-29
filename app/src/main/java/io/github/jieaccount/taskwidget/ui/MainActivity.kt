@@ -21,8 +21,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import androidx.core.content.ContextCompat
 import io.github.jieaccount.taskwidget.data.*
 import io.github.jieaccount.taskwidget.widget.TaskWidgetProvider
@@ -84,15 +87,24 @@ class MainActivity : ComponentActivity() {
             }
         }
         val visible = TaskRules.visible(state.tasks, tableId, view)
-        val tableName = state.tables.find { it.id == tableId }?.name.orEmpty()
+        var appMenu by remember { mutableStateOf(false) }
+        var subtableMenu by remember(tableId, view) { mutableStateOf(false) }
         val listState = rememberLazyListState()
         LaunchedEffect(tableId, view) { listState.scrollToItem(0) }
         fun open(action: String, taskId: Long = 0) = startActivity(FlowActivity.intent(this, action, tableId, view, taskId))
         Scaffold(topBar = {
-            Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("任务 · $tableName", Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
-                TextButton(onClick = { startActivity(Intent(this@MainActivity, TableManagementActivity::class.java)) }) { Text("表管理") }
-                TextButton(onClick = ::addWidget) { Text("添加组件") }
+            Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.End) {
+                Box {
+                    TextButton(onClick = { appMenu = true }, modifier = Modifier.semantics { contentDescription = "App 功能菜单" }) { Text("⋯") }
+                    DropdownMenu(expanded = appMenu, onDismissRequest = { appMenu = false },
+                        containerColor = Color(0xFF1C1C1C), properties = PopupProperties(focusable = true)) {
+                        DropdownMenuItem(text = { Text("表管理") }, onClick = {
+                            appMenu = false
+                            startActivity(Intent(this@MainActivity, TableManagementActivity::class.java))
+                        })
+                        DropdownMenuItem(text = { Text("添加组件") }, onClick = { appMenu = false; addWidget() })
+                    }
+                }
             }
         }) { insets ->
             Column(Modifier.fillMaxSize().padding(insets)) {
@@ -114,7 +126,14 @@ class MainActivity : ComponentActivity() {
                         }
                         Spacer(Modifier.weight(1f))
                         if (view != TaskView.DONE) TextButton(onClick = { open("add") }, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(40.dp)) { Text("＋", color = Color.White) }
-                        TextButton(onClick = { open("menu") }, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(40.dp)) { Text("⋯", color = Color.White) }
+                        Box {
+                            TextButton(onClick = { subtableMenu = true }, contentPadding = PaddingValues(0.dp),
+                                modifier = Modifier.width(40.dp).semantics { contentDescription = "当前子表菜单" }) { Text("⋯", color = Color.White) }
+                            DropdownMenu(expanded = subtableMenu, onDismissRequest = { subtableMenu = false },
+                                containerColor = Color(0xFF1C1C1C), properties = PopupProperties(focusable = true)) {
+                                SubtableMenuItems(view) { subtableMenu = false; open("sort") }
+                            }
+                        }
                     }
                     if (visible.isEmpty()) {
                         Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {

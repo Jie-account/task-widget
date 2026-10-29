@@ -64,8 +64,8 @@ fun DateEditor(date: String, time: String, onBack: () -> Unit, onConfirm: (DateC
             TextButton(onClick = { if (date.isNotBlank()) clear = true else onConfirm(null) }) { Text("不设置日期") }
         }
     }
-    if (discard) OperationDialog("放弃未保存修改？", "日期候选尚未应用到任务。", "放弃修改", onBack, { discard = false }, "继续编辑")
-    if (clear) OperationDialog("取消这项任务的日期？", "取消后返回任务草稿，保存任务后生效。", "取消日期", { onConfirm(null) }, { clear = false })
+    if (discard) OperationDialog("放弃未保存修改？", "日期候选尚未应用到任务，确认后放弃修改。", onBack, { discard = false })
+    if (clear) OperationDialog("取消这项任务的日期？", "确认后清除日期并返回任务草稿，保存任务后生效。", { onConfirm(null) }, { clear = false })
 }
 
 @Composable
