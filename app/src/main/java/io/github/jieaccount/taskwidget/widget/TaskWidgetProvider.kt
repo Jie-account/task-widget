@@ -25,7 +25,10 @@ class TaskWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onAppWidgetOptionsChanged(context: Context, manager: AppWidgetManager, id: Int, options: Bundle) {
-        Log.i("TaskWidget", "widget=$id options=$options density=${context.resources.displayMetrics.density}")
+        val dimensions = listOf(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT,
+            AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
+            .joinToString { "$it=${options.getInt(it)}" }
+        Log.i("TaskWidget", "widget=$id $dimensions density=${context.resources.displayMetrics.density}")
         refresh(context, id)
     }
 

@@ -11,7 +11,7 @@
 |---|---|
 | 语言与平台 | Kotlin 原生安卓，优先使用 AndroidX / Jetpack |
 | App 界面 | T-004 原型采用 Jetpack Compose |
-| 组件 | T-004 原型采用标准 App Widget + RemoteViews + ListView/RemoteViewsService；关键宿主行为待 P60 实测 |
+| 组件 | T-004 原型采用标准 App Widget + RemoteViews + ListView/RemoteViewsService；P60 关键宿主行为已验证 |
 | 数据 | 应用私有存储；T-004 演示数据使用版本化 JSON，T-005 再确定 Room 与正式数据迁移 |
 | 职责划分 | 共用任务归类、排序、日期、完成恢复规则；App 界面、组件显示与更新分别组织 |
 | 扩展基础 | 稳定标识、日期精度、创建/完成/人工排序信息、数据版本与迁移机制 |
@@ -23,21 +23,20 @@
 
 | 项目 | 信息与取得方式 |
 |---|---|
-| 手机 | 用户提供：HUAWEI P60 |
-| 系统 | 用户提供：HarmonyOS 4.2.0 |
-| 桌面 | 用户确认：华为自带桌面 |
-| 屏幕 | 用户提供：2700 × 1220 像素 |
-| 桌面网格和组件最大区域 | 后续真机检测 |
-| Android 兼容 API 级别 | 后续实际检测，不能由 HarmonyOS 版本号直接换算 |
-| 工具链、SDK、JDK、ADB、设备连接 | 已检测到 JDK 17；本项目 SDK 与构建工具放入忽略的 `.tools`，ADB 可启动且设备列表为空；构建入口见[开发文档](development.md) |
+| 手机 | P60，ADB 实测型号 LNA-AL00 |
+| 系统 | HarmonyOS 4.2.0；构建 LNA-AL00 4.2.0.225(C00E183R2P7)；兼容层 Android 12 / API 31 |
+| 桌面 | 华为自带桌面 14.0.1.441（versionCode 140001441） |
+| 屏幕 | 实测 1220 × 2700 像素；density 520dpi（3.25），fontScale 1.0 |
+| Android 兼容 API 级别 | 已由 ADB 实测 API 31，HarmonyOS 版本与兼容 API 分别记录 |
+| 工具链、SDK、JDK、ADB、设备连接 | JDK 17 与项目内 SDK/Gradle 已就绪，P60 已授权 ADB 并安装运行原型；构建入口见[开发文档](development.md) |
 
 ## 3. 安卓组件约束
 
 T-003 已形成[线框与交互方案](wireframes.md)及[浏览器验证记录](design/review.md)。D01–D13 为设计默认值，供 T-004 验证可执行布局；本文各技术候选与待实测项保持原状态。
 
-T-004 将固定标签放在集合列表外，使用 RemoteViewsService 提供纵向 ListView，行内独立点击通过 PendingIntent 模板与 fill-in Intent 进入 App。此方案直接对应一页布局与四类行内目标，沿用 API 26 起的标准路径。Glance 同样基于 RemoteViews；本轮选择依据是控件和点击的直接控制，未执行 Glance 性能对比。原文见[Android 集合组件](https://developer.android.com/develop/ui/views/appwidgets/collections)。
+T-004 将固定标签放在集合列表外，使用 RemoteViewsService 提供纵向 ListView，行内独立点击通过 PendingIntent 模板与 fill-in Intent 进入 App。此方案对应可伸缩布局与四类行内目标，沿用 API 26 起的标准路径；P60 关键交互已通过[实机验证](verification/t004-p60.md)。Glance 同样基于 RemoteViews；本轮选择依据是控件和点击的直接控制，未执行 Glance 性能对比。原文见[Android 集合组件](https://developer.android.com/develop/ui/views/appwidgets/collections)。
 
-原型最低 API 暂定 26，以直接使用 java.time；P60 自身 API 级别仍待检测。工具版本、compile/target 与依赖参数以[App 构建配置](../app/build.gradle.kts)、[根插件配置](../build.gradle.kts)和[Wrapper](../gradle/wrapper/gradle-wrapper.properties)为准。实际环境与结果见 [T-004 构建记录](verification/t004-build.md)。
+原型最低 API 暂定 26，以直接使用 java.time；P60 实测 API 31。工具版本、compile/target 与依赖参数以[App 构建配置](../app/build.gradle.kts)、[根插件配置](../build.gradle.kts)和[Wrapper](../gradle/wrapper/gradle-wrapper.properties)为准。实际环境与结果见 [T-004 构建记录](verification/t004-build.md)。
 
 ### 3.1 添加与页面承载
 
@@ -47,11 +46,11 @@ T-004 将固定标签放在集合列表外，使用 RemoteViewsService 提供纵
 
 有日期和已完成菜单内容为空时仍保留按钮；空态表现由线框阶段形成方案。
 
-### 3.2 一页布局
+### 3.2 默认尺寸与边框调整
 
-一页指桌面允许放置组件的区域，通常不含系统保留区域。实际位置和尺寸由桌面决定。
+用户在 2026-10-29 实测后认可默认 4×4 组件，并要求保留拖动边框调整大小。R64 已同步到需求 v0.8，实际位置、伸缩范围和网格吸附由桌面决定。
 
-首版提供一种一页布局，在不同实际宽高下伸缩。使用逻辑布局单位和可缩放字体，保留足够点击区域。任务列表纵向滚动，顶部固定；表标签通过左右翻页展示。一页布局的适配沿用同一产品规格。
+首版提供同一种可伸缩布局，配置默认 4×4，保留 `resizeMode="horizontal|vertical"`，最小区域暂为 250×300dp。使用逻辑布局单位和可缩放字体，保留足够点击区域；任务列表纵向滚动，顶部固定，表标签通过左右翻页展示。
 
 ### 3.3 刷新与时间边界
 
@@ -80,12 +79,12 @@ T-004 将固定标签放在集合列表外，使用 RemoteViewsService 提供纵
 
 | 环境 | 条件与覆盖 |
 |---|---|
-| 当前华为设备 | P60 / HarmonyOS 4.2.0 / 自带桌面：安装、组件入口、一页布局、菜单与确认、排序跳转、更新、进程重建与重启 |
+| 当前华为设备 | P60 / HarmonyOS 4.2.0 / 自带桌面：安装、组件入口、默认 4×4 与边框调整、菜单与确认、排序跳转、更新、进程重建与重启 |
 | 标准 Android 模拟器 | 选定的最低与较新 API：系统接口、字体、长文本、组件点击；厂商桌面仍需真机测试 |
 | 后续小米设备 | 明确型号与系统版本：最大区域、网格边距、滚动、跳转、省电下刷新、跨天着色 |
 | 其他品牌或桌面 | 根据实际使用需求纳入 |
 
-2026-10-29 用户安排本轮先完成可构建原型，P60 实测暂缓；本轮未运行模拟器。构建结果与后续宿主验证分别记录，工程入口见[开发文档](development.md)。每次实测记录设备、API、构建版本、操作步骤、实际结果和相关证据。
+2026-10-29 先完成可构建原型，随后按用户安排连接 P60 安装与实测；本轮未运行模拟器。构建结果与宿主验证分别记录，工程入口见[开发文档](development.md)。每次实测记录设备、API、构建版本、操作步骤、实际结果和相关证据。
 
 ## 6. 后续技术核查原文入口
 

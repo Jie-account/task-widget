@@ -1,5 +1,8 @@
 package io.github.jieaccount.taskwidget.ui
 
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -8,6 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+
+/** App 始终使用浅色主题，系统栏图标同步使用深色以保证可读性。 */
+fun ComponentActivity.enablePrototypeEdgeToEdge() {
+    enableEdgeToEdge(
+        statusBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
+        navigationBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
+    )
+}
 
 @Composable
 fun PrototypeTheme(content: @Composable () -> Unit) {

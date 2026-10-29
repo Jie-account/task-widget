@@ -46,17 +46,19 @@ SDK 路径由本机 `local.properties` 或 `ANDROID_HOME` 提供。需要复用�
 
 演示数据通过应用私有 SharedPreferences 中的版本化 JSON 跨组件、Activity 和进程重建读取；正式数据层、Room 取舍及迁移、完整表管理、线框日期控件和后台时间边界调度由 T-005 推进。此原型不代表首版业务功能已完成。
 
-从组件打开的流程使用独立任务栈，结束时移除该流程；从 App 首页进入的流程结束时返回首页。该安排已写入代码，Android 桌面宿主上的实际点击、键盘和返回表现需要连机走查。
+从组件打开的流程使用独立任务栈，结束时移除该流程；从 App 首页进入的流程结束时返回首页。P60 上的实际点击、键盘、返回及进程重建结果见[实机记录](verification/t004-p60.md)。
 
 ## 4. 连机后怎样验证
 
-ADB 位于 `.tools/android-sdk/platform-tools/adb.exe`。用户方便连接 P60 并授权 USB 调试后，再执行安装和宿主验证。
+ADB 位于 `.tools/android-sdk/platform-tools/adb.exe`。P60 已完成 USB 调试授权并安装原型；后续连接后按下列命令检查和更新。
 
 ```powershell
 .\.tools\android-sdk\platform-tools\adb.exe devices -l
 .\.tools\android-sdk\platform-tools\adb.exe install -r .\app\build\outputs\apk\debug\app-debug.apk
 ```
 
-打开 App，再通过“添加组件”请求或桌面小组件列表添加，拉伸至一个桌面页面的可用区域。用预置长列表检查顶部固定、滚动、行内各按钮、表翻页、菜单、保存返回和更新；组件实际选区在 `TaskWidget` 标签日志中记录。设备 API、桌面网格、可用逻辑尺寸和实际结果写入 T-004 验证记录。
+打开 App，通过“添加组件”请求或桌面小组件列表添加，默认使用已认可的 4×4 尺寸。长按组件，出现边框后拖动边缘圆点调整大小，点击外部结束；当前 P60 可向下拉高一行并缩回，横向最小范围由桌面网格和组件最小宽度共同决定。
+
+用预置长列表检查顶部固定、滚动、行内各按钮、表翻页、菜单、保存返回和更新；组件选区参数在 `TaskWidget` 标签日志中记录。宿主 options 为系统提供的尺寸范围，与实际像素 bounds 分开记录，见[P60 实测](verification/t004-p60.md)。
 
 原型的组件周期更新设为平台允许的 30 分钟，并监听系统日期、时间、时区变化；用户保存或确认状态操作时主动请求刷新。分钟边界自动调度及省电延迟尚待后续实现和实测。

@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -30,7 +29,7 @@ import java.time.LocalTime
 class FlowActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enablePrototypeEdgeToEdge()
         setContent { PrototypeTheme { Flow() } }
     }
 
@@ -115,7 +114,8 @@ private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit,
     var discard by rememberSaveable { mutableStateOf(false) }
     var clearDate by rememberSaveable { mutableStateOf(false) }
     val dirty = title != initial.title || description != initial.description || date != initial.date?.toString().orEmpty() || time != initial.time?.toString().orEmpty()
-    fun leave() { if (dirty) discard = true else onExit() }
+    // 显式捕获当前草稿状态，确保系统返回回调随编辑状态更新。
+    val leave = { if (dirty) discard = true else onExit() }
     fun save(clearApproved: Boolean = false) {
         if (title.isBlank()) { error = "请填写任务标题。"; return }
         val parsedDate = if (date.isBlank()) null else runCatching { LocalDate.parse(date.trim()) }.getOrNull()
@@ -125,8 +125,8 @@ private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit,
         if (initial.date != null && parsedDate == null && !clearApproved) { clearDate = true; return }
         onSave(initial.copy(title = title.trim(), description = description, date = parsedDate, time = parsedTime))
     }
-    BackHandler(onBack = ::leave)
-    FlowPage(if (initial.id == 0L) "添加任务" else "任务详情", ::leave, footer = {
+    BackHandler(onBack = leave)
+    FlowPage(if (initial.id == 0L) "添加任务" else "任务详情", leave, footer = {
         Button(onClick = { save() }, modifier = Modifier.fillMaxWidth()) { Text("保存") }
     }) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -148,12 +148,13 @@ private fun SortEditor(tableId: Long, tableName: String, initial: List<TaskItem>
     var ids by rememberSaveable(tableId) { mutableStateOf(initial.map { it.id }) }
     var discard by rememberSaveable { mutableStateOf(false) }
     var error by rememberSaveable { mutableStateOf("") }
-    fun leave() { if (ids != initial.map { it.id }) discard = true else onExit() }
+    val dirty = ids != initial.map { it.id }
+    val leave = { if (dirty) discard = true else onExit() }
     fun move(index: Int, delta: Int) {
         ids = ids.toMutableList().also { list -> val value = list.removeAt(index); list.add(index + delta, value) }
     }
-    BackHandler(onBack = ::leave)
-    FlowPage("修改排序", ::leave, footer = {
+    BackHandler(onBack = leave)
+    FlowPage("修改排序", leave, footer = {
         Button(onClick = { if (!onSave(ids)) error = "任务已变化，请返回后重新进入排序。" }, enabled = ids.size > 1, modifier = Modifier.fillMaxWidth()) { Text("保存排序") }
     }) {
         Text("$tableName / 无日期", Modifier.padding(vertical = 16.dp))
