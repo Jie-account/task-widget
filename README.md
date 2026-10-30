@@ -4,7 +4,9 @@
 
 **首版完成标志：** 在用户的华为 P60 上完成[首版需求第 9 节](docs/requirements.md)的验收，交付可日常使用的安装包与简明使用说明。
 
-当前候选版本 **0.2.4-local** 已安装到 P60：精简详情删除与首页表名，确认统一“取消／确认”，子表和 App 功能改为按钮下方弹出菜单。本轮构建与静态检查通过，界面查看和功能测试由用户人工进行，见 [T-006 记录](docs/verification/t006-p60.md)。操作见[使用说明](docs/user-guide.md)，本机留存包位于 `dist/task-widget-0.2.4-local/`。
+首版验收已完成：既有50项测试和[P60连机验证](docs/verification/t008-p60.md)通过，用户已人工完成用电与自动过期验证。正式版本 **v0.3.0** 的安装包、使用说明和校验文件见 [GitHub Release](https://github.com/Jie-account/task-widget/releases/tag/v0.3.0)，功能与交付范围见[发布说明](docs/releases/v0.3.0.md)。
+
+支持可调整大小的组件、三个任务视图、表管理、拖拽排序及JSON整体导入／导出，操作见[使用说明](docs/user-guide.md)。手机当前保留已验证的0.3-local，正式包沿用签名，可覆盖升级。
 
 ## 从这里接续
 
@@ -32,6 +34,7 @@ git clone git@github.com:Jie-account/task-widget.git
 | 原生安卓、桌面组件、跨品牌兼容与设备条件 | [技术方向](docs/technical-direction.md) |
 | 怎样构建、定位代码与连机使用 | [工程构建与使用](docs/development.md)；[T-005 实机验证](docs/verification/t005-p60.md) |
 | 怎样安装和日常操作、当前验收结果 | [简明使用说明](docs/user-guide.md)；[T-006 验收](docs/verification/t006-p60.md) |
+| 拖拽和JSON备份怎样使用、验证范围 | [T-008实测](docs/verification/t008-p60.md)；[JSON格式与恢复](docs/json-backup.md) |
 | 当前做到哪里、下一项任务与未定条件 | [当前状态与唯一任务清单](docs/progress.md) |
 | 谁做了什么、结果在哪里 | [会话行动记录](docs/session-log.md) |
 | 暂缓与候选功能 | [后续扩展方向](docs/future-directions.md) |

@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.style.TextOverflow
@@ -156,9 +157,6 @@ private fun SortEditor(tableId: Long, tableName: String, initial: List<TaskItem>
     var error by rememberSaveable { mutableStateOf("") }
     val dirty = ids != initial.map { it.id }
     val leave = { if (dirty) discard = true else onExit() }
-    fun move(index: Int, delta: Int) {
-        ids = ids.toMutableList().also { list -> val value = list.removeAt(index); list.add(index + delta, value) }
-    }
     BackHandler(onBack = leave)
     FlowPage("修改排序", leave, footer = {
         Button(onClick = { if (!onSave(ids)) error = "任务已变化，请返回后重新进入排序。" }, enabled = ids.size > 1, modifier = Modifier.fillMaxWidth()) { Text("保存排序") }
@@ -166,12 +164,11 @@ private fun SortEditor(tableId: Long, tableName: String, initial: List<TaskItem>
         Text("$tableName / 无日期", Modifier.padding(vertical = 16.dp))
         if (ids.isEmpty()) Text("暂无无日期任务")
         if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
-        LazyColumn(Modifier.weight(1f)) {
-            itemsIndexed(ids, key = { _, id -> id }) { index, id ->
-                Row(Modifier.fillMaxWidth().heightIn(min = 60.dp)) {
-                    Text("${index + 1}. ${initial.first { it.id == id }.title}", Modifier.weight(1f).padding(vertical = 16.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    TextButton(onClick = { move(index, -1) }, enabled = index > 0) { Text("↑") }
-                    TextButton(onClick = { move(index, 1) }, enabled = index < ids.lastIndex) { Text("↓") }
+        DragReorderList(ids, { ids = it }, {}, Modifier.weight(1f)) { id ->
+            Column {
+                Row(Modifier.fillMaxWidth().heightIn(min = 60.dp), verticalAlignment = Alignment.CenterVertically) {
+                    DragHandle()
+                    Text(initial.first { it.id == id }.title, Modifier.weight(1f).padding(vertical = 16.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 HorizontalDivider()
             }

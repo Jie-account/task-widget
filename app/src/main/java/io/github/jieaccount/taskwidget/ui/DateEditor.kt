@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.jieaccount.taskwidget.data.DateDraft
 import io.github.jieaccount.taskwidget.data.DateChoice
 import java.time.LocalDate
@@ -74,8 +75,8 @@ private fun DateNumber(label: String, value: String, onChange: (String) -> Unit,
         OutlinedTextField(value, onChange, label = { Text(label) }, modifier = Modifier.fillMaxWidth(), singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
         Row(Modifier.fillMaxWidth()) {
-            TextButton(onClick = { onStep(-1) }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(0.dp)) { Text("−") }
-            TextButton(onClick = { onStep(1) }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(0.dp)) { Text("＋") }
+            TextButton(onClick = { onStep(-1) }, modifier = Modifier.weight(1f).height(48.dp), contentPadding = PaddingValues(0.dp)) { Text("−", fontSize = 22.sp) }
+            TextButton(onClick = { onStep(1) }, modifier = Modifier.weight(1f).height(48.dp), contentPadding = PaddingValues(0.dp)) { Text("＋", fontSize = 22.sp) }
         }
     }
 }

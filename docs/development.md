@@ -25,6 +25,14 @@
 
 SDK 路径由本机 `local.properties` 或 `ANDROID_HOME` 提供。需要复用本项目隔离缓存时，将进程级 `GRADLE_USER_HOME` 指向 `.tools/gradle-user-home`。
 
+正式包单独构建：
+
+```powershell
+.\tools\build.ps1 -JavaHome $env:JAVA_HOME -Tasks @('assembleRelease')
+```
+
+输出为 `app/build/outputs/apk/release/app-release.apk`。当前个人发布沿用本机原型的debug签名证书以兼容覆盖升级，release变体本身不可调试；签名密钥留本机并独立保管。其他机器默认生成的证书不能覆盖已有安装，发布同签名升级需使用原密钥。正式包指纹及散列见[发布说明](releases/v0.3.0.md)。
+
 ## 2. 从哪里看代码
 
 | 职责 | 入口 |
@@ -41,14 +49,20 @@ SDK 路径由本机 `local.properties` 或 `ANDROID_HOME` 提供。需要复用�
 | 规则边界测试 | [TaskRulesTest.kt](../app/src/test/java/io/github/jieaccount/taskwidget/data/TaskRulesTest.kt) |
 | 迁移/写入失败/表任务闭环及日期调度测试 | [TaskRepositoryTest.kt](../app/src/test/java/io/github/jieaccount/taskwidget/data/TaskRepositoryTest.kt)、[DateAndRefreshTest.kt](../app/src/test/java/io/github/jieaccount/taskwidget/data/DateAndRefreshTest.kt) |
 | 日期边界刷新 | [RefreshRules.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/RefreshRules.kt)、[WidgetRefreshScheduler.kt](../app/src/main/java/io/github/jieaccount/taskwidget/widget/WidgetRefreshScheduler.kt) |
+| 长按拖拽和符号按钮 | [DragReorderList.kt](../app/src/main/java/io/github/jieaccount/taskwidget/ui/DragReorderList.kt)、[PrototypeUi.kt](../app/src/main/java/io/github/jieaccount/taskwidget/ui/PrototypeUi.kt) |
+| JSON备份编解码及恢复测试 | [BackupCodec.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/BackupCodec.kt)、[BackupAndTableOrderTest.kt](../app/src/test/java/io/github/jieaccount/taskwidget/data/BackupAndTableOrderTest.kt) |
 
 ## 3. 当前版本与数据
 
-当前构建为 `0.2.4-local`（versionCode 6），已覆盖安装 P60，显示名称为“任务组件”。应用标识继续使用 `io.github.jieaccount.taskwidget.prototype`，沿用签名和组件类名。本轮仅执行 `assembleDebug`、`lintDebug` 及安装版本核对，界面查看和功能测试由用户人工完成；此前运行结果保留各自版本条件，见[记录](verification/t006-p60.md)。新版留存包在 `dist/task-widget-0.2.4-local/`，操作见[说明](user-guide.md)。
+当前正式构建为 `0.3.0`（versionCode8），显示名称“任务组件”，应用标识及签名／组件类名沿用。手机保留已验证的 `0.3-local`（code7）：50项测试、构建、lint和P60闭环通过，见[T-008](verification/t008-p60.md)。用户已人工完成用电和自动过期验证；正式包仅执行release构建及包信息核对，未再次安装或重复功能测试。产物位于 `dist/task-widget-0.3.0/`，下载见[Release](https://github.com/Jie-account/task-widget/releases/tag/v0.3.0)，操作见[说明](user-guide.md)。
 
 独立 `acceptance` 构建变体使用 `.acceptance` 应用标识后缀和“任务组件·验收”显示名，用于在独立私有目录验证首次启动，避免清空现用主应用。可在构建脚本的 `-Tasks` 列表增加 `assembleAcceptance`；该临时包已完成新安装验收并卸载，日常安装使用主包。
 
-新安装创建一张空的“默认”表。首页顶部“…”→“表管理”可新建、重命名、上下移动、删除表；删除前确认完整表名与含已完成的任务数，始终保留至少一张。表删除后同时清理所属任务，并修正 App 与组件的选择。
+新安装创建一张空的“默认”表。首页顶部“…”→“表管理”可新建、重命名、长按拖拽排序、删除表；删除前确认完整表名与含已完成的任务数，始终保留至少一张。表删除后清理所属任务并修正入口选择。
+
+0.3起表和无日期任务共用长按拖拽组件，手势在行内消费以避免父列表滚动抢走移动；拖动边缘启用滚动。表顺序松手后整组验证与提交，任务顺序沿用草稿／保存提交点。App符号使用22sp／48dp高，与组件一致；管理表正常行移除任务数及上下箭头，删除确认保留数量。
+
+首页“…”提供JSON导入／导出，采用CreateDocument／OpenDocument而非额外存储权限。编解码与仓储原子恢复在纯Kotlin层验证；UI只在候选校验、数量确认后提交。文件导出全部业务及App选择，本机组件实例由恢复设备保留并修正；详见[格式与范围](json-backup.md)。
 
 任务详情中点“设置日期/修改日期”，分别填写年月日；开启时分时需填全。候选先确认回到任务草稿，再保存任务。过去日期可用，无效月日保留输入并提示；仅日期与 `00:00` 分别保存。任务删除统一由列表“×”触发。
 
@@ -77,6 +91,6 @@ ADB 位于 `.tools/android-sdk/platform-tools/adb.exe`。P60 已完成 USB 调�
 
 用已有列表或专用测试表检查顶部固定、滚动、行内各按钮、表翻页、菜单、保存返回和更新；组件选区参数在 `TaskWidget` 标签日志中记录。宿主 options 为系统提供的尺寸范围，与实际像素 bounds 分开记录，见[P60 实测](verification/t004-p60.md)。
 
-组件保留平台 30 分钟周期更新，用户操作后主动刷新；另为最近的未完成任务日期边界安排一个非精确闹钟。仅日期任务取次日零点，定时任务取指定时刻后 1 毫秒，刷新后重新安排最近边界；无组件或没有未来边界时取消闹钟。日期、时间、时区变化、开机及覆盖安装后会重新计算；App 前台也重新计算颜色。P60 亮屏桌面前台/USB 供电样本测得一次约 40.5 秒的边界延迟，详见[记录](verification/t005-p60.md#4-实际后台刷新)，长时间省电条件由 T-006 继续测量。
+组件保留平台 30 分钟周期更新，用户操作后主动刷新；另为最近的未完成任务日期边界安排一个非精确闹钟。仅日期任务取次日零点，定时任务取指定时刻后 1 毫秒，刷新后重新安排最近边界；无组件或没有未来边界时取消闹钟。日期、时间、时区变化、开机及覆盖安装后会重新计算；App 前台也重新计算颜色。P60 亮屏桌面前台/USB 供电样本测得一次约 40.5 秒的边界延迟，详见[记录](verification/t005-p60.md#4-实际后台刷新)；用电与自动过期已由用户人工完成验证，见[T-006最终结论](verification/t006-p60.md#10-最终人工验收与首版收尾)。
 
-`0.2.1-local` 增加应用私有 `widget_refresh_diagnostics_v1` 偏好，保存安排的边界、最近边界回调时间及接收时的省电／空闲／交互／充电状态，不含任务内容。隔夜回读先保留这些记录及组件截图，再打开 App；具体步骤见[T-006 第 4 节](verification/t006-p60.md#4-今晚的自然零点与省电观察)。系统日期／时区变化专项验收按 E17 暂缓。
+`0.2.1-local` 增加应用私有 `widget_refresh_diagnostics_v1` 偏好，保存安排的边界、最近边界回调时间及接收时的省电／空闲／交互／充电状态，不含任务内容。历史隔夜采集方法见[T-006 第 4 节](verification/t006-p60.md#4-今晚的自然零点与省电观察)；该任务已收尾。系统日期／时区变化专项验收按 E17 暂缓。

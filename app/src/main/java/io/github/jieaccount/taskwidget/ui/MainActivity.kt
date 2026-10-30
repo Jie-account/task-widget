@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,15 +28,63 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import io.github.jieaccount.taskwidget.data.*
 import io.github.jieaccount.taskwidget.widget.TaskWidgetProvider
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.Duration
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.time.format.DateTimeFormatter
 
 class MainActivity : ComponentActivity() {
     private var revision by mutableIntStateOf(0)
+    private var backupBusy by mutableStateOf(false)
+    private var pendingImport by mutableStateOf<TaskSnapshot?>(null)
+    private var importError by mutableStateOf("")
+    private val exportFile = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) lifecycleScope.launch {
+            backupBusy = true
+            val result = runCatching { withContext(Dispatchers.IO) {
+                val raw = BackupCodec.encode(TaskStore.load(this@MainActivity))
+                val stream = contentResolver.openOutputStream(uri, "wt") ?: error("无法打开文件")
+                stream.bufferedWriter(Charsets.UTF_8).use { it.write(raw) }
+            } }
+            backupBusy = false
+            Toast.makeText(this@MainActivity, if (result.isSuccess) "已导出JSON" else "导出失败，请检查保存位置后重试。", Toast.LENGTH_LONG).show()
+        }
+    }
+    private val importFile = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) lifecycleScope.launch {
+            backupBusy = true
+            val result = runCatching { withContext(Dispatchers.IO) {
+                val stream = contentResolver.openInputStream(uri) ?: error("无法打开文件")
+                stream.bufferedReader(Charsets.UTF_8).use { BackupCodec.decode(it.readText()) }
+            } }
+            backupBusy = false
+            result.onSuccess { importError = ""; pendingImport = it }.onFailure {
+                Toast.makeText(this@MainActivity, "无法导入，请选择任务组件导出的有效JSON备份文件。", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    /** 只有用户确认候选文件后才原子替换当前数据。 */
+    private fun confirmImport(snapshot: TaskSnapshot) {
+        if (backupBusy) return
+        lifecycleScope.launch {
+            backupBusy = true
+            val result = runCatching { withContext(Dispatchers.IO) { TaskStore.restoreBackup(this@MainActivity, snapshot) } }
+            backupBusy = false
+            result.onSuccess {
+                pendingImport = null; revision++
+                runCatching { TaskWidgetProvider.refreshAll(this@MainActivity) }
+                Toast.makeText(this@MainActivity, "已导入JSON", Toast.LENGTH_SHORT).show()
+            }.onFailure { importError = "导入失败，当前数据未替换，请重试。" }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enablePrototypeEdgeToEdge()
@@ -95,7 +144,7 @@ class MainActivity : ComponentActivity() {
         Scaffold(topBar = {
             Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.End) {
                 Box {
-                    TextButton(onClick = { appMenu = true }, modifier = Modifier.semantics { contentDescription = "App 功能菜单" }) { Text("⋯") }
+                    SymbolButton("⋯", "App 功能菜单", { appMenu = true }, Modifier.width(40.dp))
                     DropdownMenu(expanded = appMenu, onDismissRequest = { appMenu = false },
                         containerColor = Color(0xFF1C1C1C), properties = PopupProperties(focusable = true)) {
                         DropdownMenuItem(text = { Text("表管理") }, onClick = {
@@ -103,6 +152,14 @@ class MainActivity : ComponentActivity() {
                             startActivity(Intent(this@MainActivity, TableManagementActivity::class.java))
                         })
                         DropdownMenuItem(text = { Text("添加组件") }, onClick = { appMenu = false; addWidget() })
+                        DropdownMenuItem(text = { Text("导入 JSON") }, enabled = !backupBusy, onClick = {
+                            appMenu = false
+                            importFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+                        })
+                        DropdownMenuItem(text = { Text("导出 JSON") }, enabled = !backupBusy, onClick = {
+                            appMenu = false
+                            exportFile.launch("task-widget-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))}.json")
+                        })
                     }
                 }
             }
@@ -110,13 +167,13 @@ class MainActivity : ComponentActivity() {
             Column(Modifier.fillMaxSize().padding(insets)) {
                 Column(Modifier.weight(1f).fillMaxWidth().background(Color.Black).padding(horizontal = 4.dp)) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        TextButton(onClick = { choose(selected.copy(page = page - 1)) }, enabled = page > 0, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(32.dp)) { Text("‹", color = Color.White) }
+                        SymbolButton("‹", "上一页表标签", { choose(selected.copy(page = page - 1)) }, Modifier.width(32.dp), enabled = page > 0)
                         state.tables.drop(page * 3).take(3).forEach { table ->
                             TextButton(onClick = { choose(selected.copy(tableId = table.id)) }, modifier = Modifier.weight(1f)) {
                                 Text(table.name, maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (table.id == tableId) Color.White else Color.Gray)
                             }
                         }
-                        TextButton(onClick = { choose(selected.copy(page = page + 1)) }, enabled = page < TaskRules.pageCount(state.tables.size) - 1, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(32.dp)) { Text("›", color = Color.White) }
+                        SymbolButton("›", "下一页表标签", { choose(selected.copy(page = page + 1)) }, Modifier.width(32.dp), enabled = page < TaskRules.pageCount(state.tables.size) - 1)
                     }
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         TaskView.entries.forEach { target ->
@@ -125,10 +182,9 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         Spacer(Modifier.weight(1f))
-                        if (view != TaskView.DONE) TextButton(onClick = { open("add") }, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(40.dp)) { Text("＋", color = Color.White) }
+                        if (view != TaskView.DONE) SymbolButton("＋", "添加任务", { open("add") }, Modifier.width(40.dp))
                         Box {
-                            TextButton(onClick = { subtableMenu = true }, contentPadding = PaddingValues(0.dp),
-                                modifier = Modifier.width(40.dp).semantics { contentDescription = "当前子表菜单" }) { Text("⋯", color = Color.White) }
+                            SymbolButton("⋯", "当前子表菜单", { subtableMenu = true }, Modifier.width(40.dp))
                             DropdownMenu(expanded = subtableMenu, onDismissRequest = { subtableMenu = false },
                                 containerColor = Color(0xFF1C1C1C), properties = PopupProperties(focusable = true)) {
                                 SubtableMenuItems(view) { subtableMenu = false; open("sort") }
@@ -142,18 +198,24 @@ class MainActivity : ComponentActivity() {
                     } else LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = listState) {
                         items(visible, key = { it.id }) { task ->
                             Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
-                                TextButton(onClick = { open(if (task.done) "restore" else "complete", task.id) }, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(40.dp)) { Text(if (task.done) "☑" else "☐", color = Color.White) }
+                                SymbolButton(if (task.done) "☑" else "☐", if (task.done) "恢复未完成：${task.title}" else "完成任务：${task.title}",
+                                    { open(if (task.done) "restore" else "complete", task.id) }, Modifier.width(40.dp))
                                 Text(task.title.replace('\n', ' '), Modifier.weight(1f).clickable { open("edit", task.id) }.padding(vertical = 16.dp),
                                     maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (TaskRules.overdue(task, now)) Color(0xFFFF8585) else Color.White)
                                 if (view == TaskView.DATED) Text(task.date.toString(), Modifier.width(100.dp).clickable { open("cancel_date", task.id) }.padding(vertical = 16.dp),
                                     color = Color(0xFFFFB366), style = MaterialTheme.typography.bodySmall)
-                                TextButton(onClick = { open("delete", task.id) }, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(36.dp)) { Text("×", color = Color.Gray) }
+                                SymbolButton("×", "删除任务：${task.title}", { open("delete", task.id) }, Modifier.width(36.dp), color = Color.Gray)
                             }
                             HorizontalDivider(color = Color(0xFF232323))
                         }
                     }
                 }
             }
+        }
+        pendingImport?.let { imported ->
+            OperationDialog("导入JSON并覆盖当前数据？",
+                "备份包含 ${imported.tables.size} 张表、${imported.tasks.size} 项任务。\n确认后整体替换当前 ${state.tables.size} 张表、${state.tasks.size} 项任务，并恢复备份中的排序。${if (importError.isEmpty()) "" else "\n$importError"}",
+                { confirmImport(imported) }, { pendingImport = null }, busy = backupBusy)
         }
     }
 }

@@ -11,6 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 
 /** App 页面统一黑底，系统栏使用浅色图标。 */
 fun ComponentActivity.enablePrototypeEdgeToEdge() {
@@ -48,7 +51,11 @@ fun FlowPage(title: String, onBack: () -> Unit, footer: (@Composable () -> Unit)
         modifier = Modifier.imePadding(),
         topBar = {
             Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp)) {
-                TextButton(onClick = onBack) { Text("‹ 返回") }
+                TextButton(onClick = onBack) {
+                    Text("‹", fontSize = 22.sp, lineHeight = 28.sp)
+                    Spacer(Modifier.width(4.dp))
+                    Text("返回")
+                }
                 Text(title, Modifier.weight(1f).padding(14.dp), style = MaterialTheme.typography.titleMedium)
             }
         },
@@ -59,14 +66,24 @@ fun FlowPage(title: String, onBack: () -> Unit, footer: (@Composable () -> Unit)
 }
 
 @Composable
-fun OperationDialog(title: String, message: String, onConfirm: () -> Unit, onCancel: () -> Unit) {
+fun OperationDialog(title: String, message: String, onConfirm: () -> Unit, onCancel: () -> Unit, busy: Boolean = false) {
     AlertDialog(
-        onDismissRequest = onCancel,
+        onDismissRequest = { if (!busy) onCancel() },
         containerColor = Color(0xFF1C1C1C),
         tonalElevation = 0.dp,
         title = { Text(title) },
         text = { Text(message, Modifier.heightIn(max = 280.dp).verticalScroll(rememberScrollState())) },
-        confirmButton = { TextButton(onClick = onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text("确认") } },
-        dismissButton = { TextButton(onClick = onCancel) { Text("取消") } },
+        confirmButton = { TextButton(onClick = onConfirm, enabled = !busy, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text("确认") } },
+        dismissButton = { TextButton(onClick = onCancel, enabled = !busy) { Text("取消") } },
     )
+}
+
+/** 符号与组件保持22sp、48dp高，宽度沿用各自的行内目标。 */
+@Composable
+fun SymbolButton(symbol: String, description: String, onClick: () -> Unit, modifier: Modifier = Modifier,
+                 enabled: Boolean = true, color: Color = Color.White) {
+    TextButton(onClick = onClick, enabled = enabled, contentPadding = PaddingValues(0.dp),
+        modifier = modifier.height(48.dp).semantics { contentDescription = description }) {
+        Text(symbol, fontSize = 22.sp, lineHeight = 28.sp, color = if (enabled) color else Color.DarkGray)
+    }
 }

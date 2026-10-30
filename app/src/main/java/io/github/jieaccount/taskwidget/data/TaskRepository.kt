@@ -89,6 +89,24 @@ class TaskRepository(private val storage: SnapshotStorage) {
     }
 
     @Synchronized
+    fun reorderTables(ids: List<Long>) {
+        val state = load()
+        require(ids.size == state.tables.size && ids.toSet() == state.tables.map { it.id }.toSet()) { "表已变化，请重新排序。" }
+        val tables = state.tables.associateBy { it.id }
+        persist(normalize(state.copy(tables = ids.map { tables.getValue(it) })))
+    }
+
+    /** 整体恢复业务快照；本机组件实例沿用并修正选择，文件中的其他设备实例不导入。 */
+    @Synchronized
+    fun restoreBackup(imported: TaskSnapshot) {
+        SnapshotCodec.encode(imported)
+        val current = load()
+        val selections = current.selections.filterKeys { it != APP_ENTRANCE } +
+            (APP_ENTRANCE to (imported.selections[APP_ENTRANCE] ?: WidgetSelection(imported.tables.first().id)))
+        persist(normalize(imported.copy(selections = selections)))
+    }
+
+    @Synchronized
     fun moveTable(id: Long, delta: Int) {
         require(delta == -1 || delta == 1)
         val state = load()

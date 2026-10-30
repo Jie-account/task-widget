@@ -20,6 +20,8 @@ object TaskStore {
     fun forgetWidget(context: Context, id: Int) = repository(context).forgetWidget(id)
     fun saveTable(context: Context, id: Long, name: String) = repository(context).saveTable(id, name)
     fun moveTable(context: Context, id: Long, delta: Int) = repository(context).moveTable(id, delta)
+    fun reorderTables(context: Context, ids: List<Long>) = repository(context).reorderTables(ids)
+    fun restoreBackup(context: Context, snapshot: TaskSnapshot) = repository(context).restoreBackup(snapshot)
     fun deleteTable(context: Context, id: Long, count: Int) = repository(context).deleteTable(id, count)
 }
 

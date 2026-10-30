@@ -11,12 +11,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.jieaccount.taskwidget.data.TaskStore
 import io.github.jieaccount.taskwidget.widget.TaskWidgetProvider
 
-/** 表排序立即提交；新建和重命名使用独立草稿，删除同时显示全部任务数。 */
+/** 表拖拽结束时提交顺序；任务数量只在删除确认中说明。 */
 class TableManagementActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +34,7 @@ class TableManagementActivity : ComponentActivity() {
         val loaded = remember(revision) { runCatching { TaskStore.load(this) }.onFailure { android.util.Log.e("TaskWidget", "读取表失败", it) } }
         val state = loaded.getOrNull()
         if (state == null) { DataReadError({ finish() }, { revision++ }); return }
+        var orderedIds by remember(state.tables) { mutableStateOf(state.tables.map { it.id }) }
 
         fun applyChange(action: () -> Unit): Boolean {
             return runCatching { action() }.fold({
@@ -55,21 +57,20 @@ class TableManagementActivity : ComponentActivity() {
         FlowPage("管理表", { finish() }, footer = {
             Button(onClick = { editing = 0L }, modifier = Modifier.fillMaxWidth()) { Text("新建表") }
         }) {
-            Text("共 ${state.tables.size} 张表 · 排序即时保存", Modifier.padding(vertical = 16.dp))
+            Text("共 ${state.tables.size} 张表", Modifier.padding(vertical = 16.dp))
             if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
-            LazyColumn(Modifier.weight(1f)) {
-                itemsIndexed(state.tables, key = { _, table -> table.id }) { index, table ->
-                    Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
-                        Text(table.name, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
-                        Text("${state.tasks.count { it.tableId == table.id }} 项任务（含已完成）", style = MaterialTheme.typography.bodySmall)
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            DragReorderList(orderedIds, { orderedIds = it }, {
+                if (!applyChange { TaskStore.reorderTables(this@TableManagementActivity, orderedIds) }) orderedIds = state.tables.map { it.id }
+            }, Modifier.weight(1f)) { id ->
+                val table = state.tables.first { it.id == id }
+                Column {
+                    Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
+                        DragHandle()
+                        Text(table.name, Modifier.weight(1f), maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
                             TextButton(onClick = { editing = table.id }) { Text("改名") }
-                            TextButton(onClick = { applyChange { TaskStore.moveTable(this@TableManagementActivity, table.id, -1) } }, enabled = index > 0) { Text("↑") }
-                            TextButton(onClick = { applyChange { TaskStore.moveTable(this@TableManagementActivity, table.id, 1) } }, enabled = index < state.tables.lastIndex) { Text("↓") }
                             TextButton(onClick = { deleting = table.id }, enabled = state.tables.size > 1) { Text("删除") }
-                        }
-                        if (state.tables.size == 1) Text("至少保留一张表", style = MaterialTheme.typography.bodySmall)
                     }
+                    if (state.tables.size == 1) Text("至少保留一张表", style = MaterialTheme.typography.bodySmall)
                     HorizontalDivider()
                 }
             }

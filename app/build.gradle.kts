@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.jieaccount.taskwidget.prototype"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.2.4-local"
+        versionCode = 8
+        versionName = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true }
@@ -21,7 +21,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildTypes {
-        release { isMinifyEnabled = false }
+        release {
+            isMinifyEnabled = false
+            // 沿用个人已安装版本的本机签名，保证覆盖升级兼容；密钥不进入Git。
+            signingConfig = signingConfigs.getByName("debug")
+        }
         create("acceptance") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".acceptance"
