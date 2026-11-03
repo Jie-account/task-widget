@@ -19,7 +19,7 @@
 
 ## 版本管理
 
-GitHub 仓库：[Jie-account/task-widget](https://github.com/Jie-account/task-widget)，主分支为 `main`。
+GitHub 公开仓库：[Jie-account/task-widget](https://github.com/Jie-account/task-widget)，主分支为 `main`。
 
 ```bash
 git clone git@github.com:Jie-account/task-widget.git
