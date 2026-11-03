@@ -4,7 +4,7 @@
 
 ## 1. 安装与添加组件
 
-从 [GitHub Release](https://github.com/Jie-account/task-widget/releases/tag/v0.3.0) 下载 `task-widget-0.3.0.apk`，或下载包含APK、说明和校验文件的ZIP。本机留存于 `dist/task-widget-0.3.0/`。将APK传到手机，打开后按系统提示安装；已有原型可直接覆盖升级，数据与组件继续保留。需要卸载或清除数据时，先通过下文JSON导出保存当前记录。
+从 [GitHub Release](https://github.com/Jie-account/task-widget/releases/tag/v0.3.0) 下载 `task-widget-0.3.0.apk`，或下载包含APK、说明和校验文件的ZIP。将APK传到手机，打开后按系统提示安装；已有原型可直接覆盖升级，数据与组件继续保留。需要卸载或清除数据时，先通过下文JSON导出保存当前记录。
 
 打开“任务组件”，点顶部 **⋯ → 添加组件**，按桌面提示确认；也可以在桌面小组件列表选择“任务组件”。默认采用 4×4 大小。长按组件，出现边框后拖动圆点调节大小，点外部结束；可调范围由手机桌面决定。
 

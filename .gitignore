@@ -15,6 +15,18 @@ local.properties
 # 本地密钥与环境配置
 *.jks
 *.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+*.bundle
 .env
 .env.*
 !.env.example
+
+# 私人备份、设备取证与公开整理归档
+/.private/
+/backups/
+/device-captures/
+/privacy-archive/
+/task-widget-*.json

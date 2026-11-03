@@ -4,7 +4,7 @@
 
 ## 1. 本机构建入口
 
-在项目根目录使用 PowerShell；本机可用 JDK 位于 `JAVA_HOME`。
+在项目根目录使用PowerShell，并将 `JAVA_HOME` 设置为本机JDK17目录。
 
 ```powershell
 .\tools\prepare-android.ps1 -JavaHome $env:JAVA_HOME
