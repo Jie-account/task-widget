@@ -86,7 +86,7 @@ class TableManagementActivity : ComponentActivity() {
 }
 
 @Composable
-private fun TableNameEditor(initial: String, isNew: Boolean, onBack: () -> Unit, onSave: (String) -> String?) {
+internal fun TableNameEditor(initial: String, isNew: Boolean, onBack: () -> Unit, onSave: (String) -> String?) {
     var name by rememberSaveable { mutableStateOf(initial) }
     var discard by rememberSaveable { mutableStateOf(false) }
     var error by rememberSaveable { mutableStateOf("") }

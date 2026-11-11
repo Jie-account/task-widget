@@ -7,6 +7,7 @@
         <TextView android:id="@+id/table_one" style="@style/WidgetTable" />
         <TextView android:id="@+id/table_two" style="@style/WidgetTable" />
         <TextView android:id="@+id/table_three" style="@style/WidgetTable" />
+        <TextView android:id="@+id/add_table" style="@style/WidgetAction" android:text="＋" android:contentDescription="新建表" android:visibility="gone" />
         <TextView android:id="@+id/next_page" style="@style/WidgetAction" android:layout_width="32dp" android:text="›" android:contentDescription="下一页表标签" />
     </LinearLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="52dp" android:gravity="center_vertical">

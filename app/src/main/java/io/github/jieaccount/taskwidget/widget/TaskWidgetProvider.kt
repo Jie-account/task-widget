@@ -91,7 +91,11 @@ class TaskWidgetProvider : AppWidgetProvider() {
                 views.setOnClickPendingIntent(viewId, navigation(context, id, "view", view = view))
             }
             val previousEnabled = selection.page > 0
-            val nextEnabled = selection.page < TaskRules.pageCount(state.tables.size) - 1
+            val lastPage = TaskRules.pageCount(state.tables.size) - 1
+            val nextEnabled = selection.page < lastPage
+            // 新建表入口只在最后一页显示，独立于下方的添加任务按钮。
+            views.setViewVisibility(R.id.add_table, if (selection.page == lastPage) View.VISIBLE else View.GONE)
+            views.setOnClickPendingIntent(R.id.add_table, flow(context, id, "new_table"))
             listOf(Triple(R.id.previous_page, -1, previousEnabled), Triple(R.id.next_page, 1, nextEnabled)).forEach { (viewId, delta, enabled) ->
                 views.setBoolean(viewId, "setEnabled", enabled)
                 views.setTextColor(viewId, if (enabled) Color.WHITE else Color.DKGRAY)

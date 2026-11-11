@@ -73,8 +73,9 @@ class TaskRepository(private val storage: SnapshotStorage) {
         return true
     }
 
+    /** 从组件创建时，同时保存新表和发起入口的选中状态。 */
     @Synchronized
-    fun saveTable(id: Long, name: String): TaskTable {
+    fun saveTable(id: Long, name: String, selectForEntrance: Int? = null): TaskTable {
         val state = load()
         val trimmed = name.trim()
         require(trimmed.isNotEmpty()) { "请填写表名。" }
@@ -84,7 +85,11 @@ class TaskRepository(private val storage: SnapshotStorage) {
             TaskTable(id, trimmed)
         }
         val tables = if (id == 0L) state.tables + table else state.tables.map { if (it.id == id) table else it }
-        persist(state.copy(tables = tables, sequence = if (id == 0L) table.id else state.sequence))
+        val selections = if (id == 0L && selectForEntrance != null) {
+            val selected = state.selections[selectForEntrance] ?: WidgetSelection(table.id)
+            state.selections + (selectForEntrance to selected.copy(tableId = table.id, page = tables.lastIndex / 3))
+        } else state.selections
+        persist(state.copy(tables = tables, sequence = if (id == 0L) table.id else state.sequence, selections = selections))
         return table
     }
 

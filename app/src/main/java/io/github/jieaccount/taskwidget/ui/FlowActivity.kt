@@ -62,6 +62,12 @@ class FlowActivity : ComponentActivity() {
             return
         }
         when (action) {
+            "new_table" -> TableNameEditor("", true, ::exitFlow) { name ->
+                val widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+                    .takeIf { it != AppWidgetManager.INVALID_APPWIDGET_ID }
+                runCatching { TaskStore.saveTable(this, 0L, name, selectForEntrance = widgetId) }
+                    .fold({ saved(); null }, { it.message ?: "保存失败，请重试。" })
+            }
             "add", "edit" -> {
                 val initial = existing ?: TaskItem(0, tableId, "", date = if (view == TaskView.DATED) LocalDate.now() else null, createdOrder = 0)
                 TaskEditor(initial, tableName, ::exitFlow,
@@ -97,6 +103,7 @@ class FlowActivity : ComponentActivity() {
             return Intent(context, FlowActivity::class.java)
                 .setData(Uri.parse("taskwidget://flow/$widgetId/$action/$tableId/${view.name}/$taskId"))
                 .putExtra("tableId", tableId).putExtra("view", view.name).putExtra("fromWidget", fromWidget)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
                 .apply {
                     // 集合模板保留这两个字段为空，让行内 fill-in Intent 提供实际操作与任务。
                     if (action != "row") putExtra("flow", action)
