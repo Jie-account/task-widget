@@ -41,7 +41,8 @@ private class TaskFactory(private val context: Context, private val tableId: Lon
     override fun getViewTypeCount() = 1
     override fun hasStableIds() = true
     override fun getItemId(position: Int) = items.getOrNull(position)?.id ?: -1L
-    override fun getLoadingView(): RemoteViews? = null
+    // 显式提供空白占位，避免宿主在异步加载行时显示系统默认的“正在加载”。
+    override fun getLoadingView(): RemoteViews = RemoteViews(context.packageName, R.layout.task_loading)
 
     override fun getViewAt(position: Int): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.task_row)
