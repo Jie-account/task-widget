@@ -11,6 +11,8 @@ import android.content.Intent
 import android.util.Log
 import io.github.jieaccount.taskwidget.data.RefreshRules
 import io.github.jieaccount.taskwidget.data.TaskStore
+import io.github.jieaccount.taskwidget.data.DateDisplayMode
+import io.github.jieaccount.taskwidget.data.DateDisplayPreferences
 import java.time.ZonedDateTime
 
 /** 每次更新后只保留最近一个边界闹钟，不申请精确闹钟权限。 */
@@ -41,7 +43,8 @@ object WidgetRefreshScheduler {
         diagnostics(context).edit().putLong("scheduledBoundary", 0).apply()
         val ids = AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, TaskWidgetProvider::class.java))
         if (ids.isEmpty()) return
-        val next = RefreshRules.nextBoundary(TaskStore.load(context).tasks, ZonedDateTime.now()) ?: return
+        val next = RefreshRules.nextBoundary(TaskStore.load(context).tasks, ZonedDateTime.now(),
+            relativeDates = DateDisplayPreferences.read(context) == DateDisplayMode.RELATIVE) ?: return
         // 系统允许唤醒，但省电模式和厂商后台策略仍可能推迟执行。
         alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.toEpochMilli(), pending)
         diagnostics(context).edit().putLong("scheduledBoundary", next.toEpochMilli()).apply()

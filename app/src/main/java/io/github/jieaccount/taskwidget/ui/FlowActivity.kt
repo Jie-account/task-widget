@@ -32,6 +32,16 @@ import java.time.LocalTime
 class FlowActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 集合模板以Activity分发点击；日期切换不绘制页面，并兼容桌面缓存的旧日期点击。
+        if (intent.getStringExtra("flow") in listOf("toggle_date_display", "cancel_date")) {
+            if (savedInstanceState == null) {
+                DateDisplayPreferences.toggle(this)
+                runCatching { TaskWidgetProvider.refreshAll(this) }
+                    .onFailure { android.util.Log.e("TaskWidget", "切换日期显示后刷新失败", it) }
+            }
+            exitFlow()
+            return
+        }
         enablePrototypeEdgeToEdge()
         setContent { PrototypeTheme { Flow() } }
     }
@@ -57,7 +67,7 @@ class FlowActivity : ComponentActivity() {
         val view = TaskView.entries.firstOrNull { it.name == intent.getStringExtra("view") } ?: TaskView.DATED
         var action by rememberSaveable { mutableStateOf(intent.getStringExtra("flow") ?: "edit") }
         val tableName = state.tables.find { it.id == tableId }?.name.orEmpty()
-        if (action in listOf("edit", "complete", "restore", "cancel_date", "delete") && existing == null) {
+        if (action in listOf("edit", "complete", "restore", "delete") && existing == null) {
             LaunchedEffect(Unit) { Toast.makeText(this@FlowActivity, "任务已不存在", Toast.LENGTH_SHORT).show(); exitFlow() }
             return
         }
@@ -80,13 +90,12 @@ class FlowActivity : ComponentActivity() {
             "sort" -> SortEditor(tableId, tableName, TaskRules.visible(state.tasks, tableId, TaskView.UNDATED), ::exitFlow) { ids ->
                 if (runCatching { TaskStore.reorder(this, tableId, ids) }.getOrDefault(false)) { saved(); true } else false
             }
-            "complete", "restore", "cancel_date", "delete" -> {
+            "complete", "restore", "delete" -> {
                 val task = existing!!
                 var error by remember { mutableStateOf("") }
                 val wording = when (action) {
                     "complete" -> "完成这项任务？" to "确认后进入已完成最上方。"
                     "restore" -> "恢复为未完成？" to if (task.date != null) "保留原日期，回到有日期并按日期排序。" else "回到无日期最上方。"
-                    "cancel_date" -> "取消这项任务的日期？" to "确认后进入无日期最上方。"
                     else -> "删除这项任务？" to "删除后无法恢复。"
                 }
                 OperationDialog(wording.first, "“${task.title}”\n${wording.second}${if (error.isNotEmpty()) "\n$error" else ""}", {
@@ -150,7 +159,11 @@ private fun TaskEditor(initial: TaskItem, tableName: String, onExit: () -> Unit,
             OutlinedTextField(title, { title = it }, label = { Text("标题 · 必填") }, modifier = Modifier.fillMaxWidth().focusRequester(titleFocus), minLines = 2)
             OutlinedTextField(description, { description = it }, label = { Text("描述 · 选填") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
             Text(if (date.isBlank()) "未设置日期" else if (time.isBlank()) date else "$date $time")
-            OutlinedButton(onClick = { showDate = true }) { Text(if (date.isBlank()) "设置日期" else "修改日期") }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedButton(onClick = { showDate = true }) { Text(if (date.isBlank()) "设置日期" else "修改日期") }
+                // 仅清空当前草稿，时分与日期同时清除；和其他字段一起保存。
+                if (date.isNotBlank()) OutlinedButton(onClick = { date = ""; time = "" }) { Text("取消日期") }
+            }
             Spacer(Modifier.height(16.dp))
         }
     }

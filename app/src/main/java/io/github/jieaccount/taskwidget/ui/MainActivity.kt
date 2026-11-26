@@ -117,6 +117,11 @@ class MainActivity : ComponentActivity() {
         val loaded = remember(version) { runCatching { TaskStore.load(this) }.onFailure { android.util.Log.e("TaskWidget", "读取任务失败", it) } }
         val state = loaded.getOrNull()
         if (state == null) { DataReadError({ finish() }, { revision++ }); return }
+        var dateMode by remember { mutableStateOf(DateDisplayPreferences.read(this)) }
+        DisposableEffect(Unit) {
+            val unsubscribe = DateDisplayPreferences.observe(this@MainActivity) { dateMode = it }
+            onDispose { unsubscribe() }
+        }
         var selected by remember(version) { mutableStateOf(state.selections[TaskRepository.APP_ENTRANCE] ?: WidgetSelection(state.tables.first().id)) }
         val tableId = selected.tableId
         val view = selected.view
@@ -127,11 +132,11 @@ class MainActivity : ComponentActivity() {
                 .onFailure { Toast.makeText(this, "选择保存失败，请重试", Toast.LENGTH_SHORT).show() }
         }
         var now by remember { mutableStateOf(LocalDateTime.now()) }
-        LaunchedEffect(version, state.tasks) {
+        LaunchedEffect(version, state.tasks, dateMode) {
             while (true) {
                 val current = ZonedDateTime.now()
                 now = current.toLocalDateTime()
-                val boundary = RefreshRules.nextBoundary(state.tasks, current) ?: break
+                val boundary = RefreshRules.nextBoundary(state.tasks, current, relativeDates = dateMode == DateDisplayMode.RELATIVE) ?: break
                 delay(Duration.between(current.toInstant(), boundary).toMillis().coerceAtLeast(1))
             }
         }
@@ -141,6 +146,11 @@ class MainActivity : ComponentActivity() {
         val listState = rememberLazyListState()
         LaunchedEffect(tableId, view) { listState.scrollToItem(0) }
         fun open(action: String, taskId: Long = 0) = startActivity(FlowActivity.intent(this, action, tableId, view, taskId))
+        fun toggleDateDisplay() {
+            DateDisplayPreferences.toggle(this)
+            runCatching { TaskWidgetProvider.refreshAll(this) }
+                .onFailure { android.util.Log.e("TaskWidget", "切换日期显示后刷新失败", it) }
+        }
         Scaffold(topBar = {
             Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.End) {
                 Box {
@@ -202,8 +212,10 @@ class MainActivity : ComponentActivity() {
                                     { open(if (task.done) "restore" else "complete", task.id) }, Modifier.width(40.dp))
                                 Text(task.title.replace('\n', ' '), Modifier.weight(1f).clickable { open("edit", task.id) }.padding(vertical = 16.dp),
                                     maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (TaskRules.overdue(task, now)) Color(0xFFFF8585) else Color.White)
-                                if (view == TaskView.DATED) Text(task.date.toString(), Modifier.width(100.dp).clickable { open("cancel_date", task.id) }.padding(vertical = 16.dp),
-                                    color = Color(0xFFFFB366), style = MaterialTheme.typography.bodySmall)
+                                if (view == TaskView.DATED) Text(DateDisplay.label(task.date!!, now.toLocalDate(), dateMode),
+                                    Modifier.width(100.dp).clickable { toggleDateDisplay() }.padding(vertical = 16.dp)
+                                        .semantics { contentDescription = "${dateMode.toggleDescription}：${task.title}" },
+                                    color = Color(0xFFFFB366), style = MaterialTheme.typography.bodySmall, maxLines = 1)
                                 SymbolButton("×", "删除任务：${task.title}", { open("delete", task.id) }, Modifier.width(36.dp), color = Color.Gray)
                             }
                             HorizontalDivider(color = Color(0xFF232323))

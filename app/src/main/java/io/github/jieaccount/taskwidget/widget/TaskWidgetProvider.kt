@@ -16,7 +16,9 @@ import io.github.jieaccount.taskwidget.R
 import io.github.jieaccount.taskwidget.data.TaskStore
 import io.github.jieaccount.taskwidget.data.TaskRules
 import io.github.jieaccount.taskwidget.data.TaskView
+import io.github.jieaccount.taskwidget.data.DateDisplayPreferences
 import io.github.jieaccount.taskwidget.ui.FlowActivity
+import java.time.LocalDate
 
 /** 固定导航由 Provider 更新，滚动任务集合交给 RemoteViewsService。 */
 class TaskWidgetProvider : AppWidgetProvider() {
@@ -106,7 +108,11 @@ class TaskWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.open_menu, flow(context, id, "menu"))
             val adapter = Intent(context, TaskListService::class.java)
                 .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
-                .setData(Uri.parse("taskwidget://collection/$id"))
+                .putExtra("tableId", selection.tableId)
+                .putExtra("view", selection.view.name)
+                .putExtra("dateMode", DateDisplayPreferences.read(context).name)
+                // 显示上下文变化时重新绑定集合，避免宿主沿用旧日期或失效连接的行缓存。
+                .setData(Uri.parse("taskwidget://collection/$id/${selection.tableId}/${selection.view.name}/${DateDisplayPreferences.read(context).name}/${LocalDate.now()}/${state.tasks.hashCode()}"))
             views.setRemoteAdapter(R.id.task_list, adapter)
             // 集合行需要 fill-in Intent；菜单另需接收系统提供的点击矩形。
             val rowIntent = FlowActivity.intent(context, "row", selection.tableId, selection.view, widgetId = id)

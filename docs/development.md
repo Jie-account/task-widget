@@ -31,7 +31,7 @@ SDK 路径由本机 `local.properties` 或 `ANDROID_HOME` 提供。需要复用�
 .\tools\build.ps1 -JavaHome $env:JAVA_HOME -Tasks @('assembleRelease')
 ```
 
-输出为 `app/build/outputs/apk/release/app-release.apk`。当前个人发布沿用本机原型的debug签名证书以兼容覆盖升级，release变体本身不可调试；签名密钥留本机并独立保管。其他机器默认生成的证书不能覆盖已有安装，发布同签名升级需使用原密钥。正式包指纹及散列见[发布说明](releases/v0.3.0.md)。
+输出为 `app/build/outputs/apk/release/app-release.apk`。当前个人发布沿用本机原型的debug签名证书以兼容覆盖升级，release变体本身不可调试；签名密钥留本机并独立保管。其他机器默认生成的证书不能覆盖已有安装，发布同签名升级需使用原密钥。正式包指纹及散列见[发布说明](releases/v0.3.2.md)。
 
 ## 2. 从哪里看代码
 
@@ -49,12 +49,17 @@ SDK 路径由本机 `local.properties` 或 `ANDROID_HOME` 提供。需要复用�
 | 规则边界测试 | [TaskRulesTest.kt](../app/src/test/java/io/github/jieaccount/taskwidget/data/TaskRulesTest.kt) |
 | 迁移/写入失败/表任务闭环及日期调度测试 | [TaskRepositoryTest.kt](../app/src/test/java/io/github/jieaccount/taskwidget/data/TaskRepositoryTest.kt)、[DateAndRefreshTest.kt](../app/src/test/java/io/github/jieaccount/taskwidget/data/DateAndRefreshTest.kt) |
 | 日期边界刷新 | [RefreshRules.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/RefreshRules.kt)、[WidgetRefreshScheduler.kt](../app/src/main/java/io/github/jieaccount/taskwidget/widget/WidgetRefreshScheduler.kt) |
+| 日期显示与全局偏好 | [DateDisplay.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/DateDisplay.kt)、[DateDisplayPreferences.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/DateDisplayPreferences.kt) |
 | 长按拖拽和符号按钮 | [DragReorderList.kt](../app/src/main/java/io/github/jieaccount/taskwidget/ui/DragReorderList.kt)、[PrototypeUi.kt](../app/src/main/java/io/github/jieaccount/taskwidget/ui/PrototypeUi.kt) |
 | JSON备份编解码及恢复测试 | [BackupCodec.kt](../app/src/main/java/io/github/jieaccount/taskwidget/data/BackupCodec.kt)、[BackupAndTableOrderTest.kt](../app/src/test/java/io/github/jieaccount/taskwidget/data/BackupAndTableOrderTest.kt) |
 
 ## 3. 当前版本与数据
 
-当前正式构建为 `0.3.1`（versionCode9），显示名称“任务组件”，应用标识及签名／组件类名沿用。正式release APK已安装P60，新功能与必要回归通过，旧版数据真实导入后再次导出比对一致；本轮10项针对性JVM测试通过，lint为0错误／27警告，见[T-011](verification/t011-p60.md)。产物位于 `dist/task-widget-0.3.1/`，下载见[Release](https://github.com/Jie-account/task-widget/releases/tag/v0.3.1)，操作见[说明](user-guide.md)。
+当前正式构建为`0.3.2`（versionCode11），名称、应用标识和签名沿用。正式release APK已安装P60，日期切换、草稿提交、集合更新及必要JSON回归通过；原信息恢复后逐字段一致。产物位于`dist/task-widget-0.3.2/`，下载见[Release](https://github.com/Jie-account/task-widget/releases/tag/v0.3.2)，范围见[T-012实机记录](verification/t012-p60.md)。
+
+`DateDisplay.kt`提供自然日文字，`DateDisplayPreferences.kt`保存本机全局模式并通知App；组件日期点击经透明流程入口立即切换，兼容旧点击。相对模式增加每日午夜候选边界；详情取消日期只清空草稿，沿用统一保存及退出提示。业务快照v2与JSON备份v1保持兼容。
+
+组件集合URI包含表、子表、模式、当地日期及任务内容指纹，Factory固定自身显示上下文，避免宿主缓存与异步切换产生旧行。30项针对性JVM测试见[离线结果](verification/t012-offline.md)；修正后正式构建和lint通过，0错误／28警告，实机边界与验证条件见[记录](verification/t012-p60.md#2-边界刷新与修正)。
 
 独立 `acceptance` 构建变体使用 `.acceptance` 应用标识后缀和“任务组件·验收”显示名，用于在独立私有目录验证首次启动，避免清空现用主应用。可在构建脚本的 `-Tasks` 列表增加 `assembleAcceptance`；该临时包已完成新安装验收并卸载，日常安装使用主包。
 
@@ -93,6 +98,6 @@ ADB 位于 `.tools/android-sdk/platform-tools/adb.exe`。P60 已完成 USB 调�
 
 用已有列表或专用测试表检查顶部固定、滚动、行内各按钮、表翻页、菜单、保存返回和更新；组件选区参数在 `TaskWidget` 标签日志中记录。宿主 options 为系统提供的尺寸范围，与实际像素 bounds 分开记录，见[P60 实测](verification/t004-p60.md)。
 
-组件保留平台 30 分钟周期更新，用户操作后主动刷新；另为最近的未完成任务日期边界安排一个非精确闹钟。仅日期任务取次日零点，定时任务取指定时刻后 1 毫秒，刷新后重新安排最近边界；无组件或没有未来边界时取消闹钟。日期、时间、时区变化、开机及覆盖安装后会重新计算；App 前台也重新计算颜色。P60 亮屏桌面前台/USB 供电样本测得一次约 40.5 秒的边界延迟，详见[记录](verification/t005-p60.md#4-实际后台刷新)；用电与自动过期已由用户人工完成验证，见[T-006最终结论](verification/t006-p60.md#10-最终人工验收与首版收尾)。
+组件保留平台 30 分钟周期更新，用户操作后主动刷新；另为最近的未完成任务日期边界安排一个非精确闹钟。仅日期任务取次日零点，定时任务取指定时刻后 1 毫秒，刷新后重新安排最近边界；相对模式还取下一个自然日午夜，与过期边界取较早者；无组件或没有适用边界时取消闹钟。日期、时间、时区变化、开机及覆盖安装后会重新计算；App 前台也重新计算颜色。P60 亮屏桌面前台/USB 供电样本测得一次约 40.5 秒的边界延迟，详见[记录](verification/t005-p60.md#4-实际后台刷新)；用电与自动过期已由用户人工完成验证，见[T-006最终结论](verification/t006-p60.md#10-最终人工验收与首版收尾)。
 
 `0.2.1-local` 增加应用私有 `widget_refresh_diagnostics_v1` 偏好，保存安排的边界、最近边界回调时间及接收时的省电／空闲／交互／充电状态，不含任务内容。历史隔夜采集方法见[T-006 第 4 节](verification/t006-p60.md#4-今晚的自然零点与省电观察)；该任务已收尾。系统日期／时区变化专项验收按 E17 暂缓。
