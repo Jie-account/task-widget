@@ -4,13 +4,13 @@
 
 **首版完成标志：** 在用户的华为 P60 上完成[首版需求第 9 节](docs/requirements.md)的验收，交付可日常使用的安装包与简明使用说明。
 
-首版验收已完成，用电与自动过期已有人工验收。当前版本 **v0.3.2** 支持全局日期显示切换与详情取消日期草稿，正式APK已安装P60并完成必要测试，原数据已恢复并核对完全一致，见[验证摘要](docs/verification/t012-p60.md)。安装包、使用说明和校验文件见 [GitHub Release](https://github.com/Jie-account/task-widget/releases/tag/v0.3.2)，交付范围见[发布说明](docs/releases/v0.3.2.md)。
+首版验收已完成，用电与自动过期已有人工验收。当前正式Release **v0.3.2** 支持全局日期显示切换与详情取消日期草稿，该版已完成P60必要测试及原数据恢复，见[验证摘要](docs/verification/t012-p60.md)。正式安装包、使用说明和校验文件见 [GitHub Release](https://github.com/Jie-account/task-widget/releases/tag/v0.3.2)，交付范围见[发布说明](docs/releases/v0.3.2.md)。
 
 支持三个任务视图、表管理、拖拽排序及JSON整体导入／导出，操作见[使用说明](docs/user-guide.md)。正式包沿用原型签名，可覆盖升级。
 
 组件表标签最后一页的“＋”可直接新建表，保存后返回桌面并自动选中新表。当前交付状态见[任务清单](docs/progress.md)。
 
-T-013的组件空白加载占位已完成离线检查，开发版0.3.3-local候选已留存，见[离线结果](docs/verification/t013-offline.md)。本轮仅推送源码，安装和人工使用验证待用户安排；正式Release仍为v0.3.2。
+T-013的组件空白加载占位已完成离线检查，开发版0.3.3-local/code12已覆盖安装P60；升级前后导出逐字段一致，原数据、组件实例及当前列表保留，见[离线与安装记录](docs/verification/t013-offline.md)。实际切换效果由用户人工确认；正式Release仍为v0.3.2。
 
 ## 从这里接续
 

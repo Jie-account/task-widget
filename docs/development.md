@@ -61,7 +61,7 @@ SDK 路径由本机 `local.properties` 或 `ANDROID_HOME` 提供。需要复用�
 
 组件集合URI包含表、子表、模式、当地日期及任务内容指纹，Factory固定自身显示上下文，避免宿主缓存与异步切换产生旧行。30项针对性JVM测试见[离线结果](verification/t012-offline.md)；修正后正式构建和lint通过，0错误／28警告，实机边界与验证条件见[记录](verification/t012-p60.md#2-边界刷新与修正)。
 
-T-013开发版0.3.3-local/code12将`getLoadingView()`改为显式返回`task_loading.xml`：52dp黑色空白占位，与任务行同高，加载后由真实行替换。构建、lint与编译布局核对已通过，候选留存`dist/task-widget-0.3.3-local/`，见[离线结果](verification/t013-offline.md)。正式版和手机仍为0.3.2，后续连机安装和数据保护按用户安排。
+T-013开发版0.3.3-local/code12将`getLoadingView()`改为显式返回`task_loading.xml`：52dp黑色空白占位，与任务行同高，加载后由真实行替换。构建、lint与编译布局核对已通过，候选留存`dist/task-widget-0.3.3-local/`。该包已从0.3.2同签名覆盖安装，升级前后JSON业务逐字段一致，原组件保留；见[离线与安装记录](verification/t013-offline.md)。正式Release仍为0.3.2，切换视觉由用户人工确认。
 
 独立 `acceptance` 构建变体使用 `.acceptance` 应用标识后缀和“任务组件·验收”显示名，用于在独立私有目录验证首次启动，避免清空现用主应用。可在构建脚本的 `-Tasks` 列表增加 `assembleAcceptance`；该临时包已完成新安装验收并卸载，日常安装使用主包。
 
